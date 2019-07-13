@@ -7,3 +7,8 @@ https://www.qcrit.org
 pip install qcrit
 ```
 
+## Submission
+```bash
+python setup.py bdist_wheel sdist
+twine upload dist/*
+```
