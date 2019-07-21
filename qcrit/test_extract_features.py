@@ -1,4 +1,7 @@
+#pylint: disable = missing-docstring, blacklisted-name, unused-argument, invalid-name
+'''Test feature extraction'''
 import unittest
+
 from .extract_features import main
 from .textual_feature import textual_feature, setup_tokenizers
 
@@ -11,7 +14,7 @@ def dummy_feature(text):
 	pass
 
 class TestExtractFeatures(unittest.TestCase):
-	
+
 	def testAllNone(self):
 		self.assertRaises(ValueError, main, corpus_dir=None, file_extension=None)
 

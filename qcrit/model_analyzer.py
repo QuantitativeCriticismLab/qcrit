@@ -1,11 +1,14 @@
+'''Decorator for functions analyzing models'''
+
 from collections import OrderedDict
 
-decorated_analyzers = OrderedDict()
+DECORATED_ANALYZERS = OrderedDict()
 
 def model_analyzer():
-	def decor(f):
+	'''Decorator for functions analyzing models'''
+	def decor(dec_func):
 		def wrapper(data, target, file_names, feature_names, labels_key):
-			return f(data, target, file_names, feature_names, labels_key)
-		decorated_analyzers[f.__name__] = wrapper
+			return dec_func(data, target, file_names, feature_names, labels_key)
+		DECORATED_ANALYZERS[dec_func.__name__] = wrapper
 		return wrapper
 	return decor

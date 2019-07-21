@@ -1,6 +1,9 @@
+#pylint: disable = missing-docstring, blacklisted-name, unused-argument, invalid-name
+'''Test decorators'''
+import unittest
+
 from .textual_feature import textual_feature, decorated_features, \
 	tokenize_types, clear_cache, debug_output, setup_tokenizers
-import unittest
 
 setup_tokenizers(terminal_punctuation=('.', '?')) #'FULL STOP', 'SEMICOLON', 'GREEK QUESTION MARK'
 
@@ -87,8 +90,8 @@ class TestTextualFeature(unittest.TestCase):
 			'test', '.', 'test', '.']]
 
 		i = 0
-		for v in decorated_features.values():
-			self.assertEqual(v(text=file, filepath=filename), outputs[i])
+		for feat in decorated_features.values():
+			self.assertEqual(feat(text=file, filepath=filename), outputs[i])
 			i += 1
 
 	def test_no_filename(self):

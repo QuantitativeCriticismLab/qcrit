@@ -1,15 +1,18 @@
+'''
+Setup
+'''
 import setuptools
 
 with open('README.md', 'r') as fh:
-	long_description = fh.read()
+	LONG_DESCRIPTION = fh.read()
 
 setuptools.setup(
 	name='qcrit',
 	version='0.0.8',
 	author='Tim Gianitsos',
 	author_email='contact@qcrit.org',
-	description="Quantitative Criticism Lab",
-	long_description=long_description,
+	description='Quantitative Criticism Lab',
+	long_description=LONG_DESCRIPTION,
 	long_description_content_type='text/markdown',
 	url='https://www.qcrit.org',
 	packages=setuptools.find_packages(),
@@ -19,4 +22,3 @@ setuptools.setup(
 		"Operating System :: OS Independent",
 	],
 )
-

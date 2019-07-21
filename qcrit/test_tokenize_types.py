@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
+#pylint: disable = missing-docstring, blacklisted-name, unused-argument, invalid-name, line-too-long, protected-access
 import unittest
-from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktLanguageVars
 import re
+
+from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktLanguageVars
 
 from . import textual_feature
 
@@ -11,15 +12,17 @@ from . import textual_feature
 textual_feature.setup_tokenizers(terminal_punctuation=('.', ';', ';'))
 p = PunktLanguageVars()
 #TODO don't mess with the PunktLanguageVars instance variables, mess with the class variables
-p._re_word_tokenizer = re.compile(PunktLanguageVars._word_tokenize_fmt % {
-    'NonWord': r"(?:[\d\.\?¿؟\!¡！‽…⋯᠁ฯ,،，､、。°※··᛫~\:;;\\\/⧸⁄（）\(\)\[\]\{\}\<\>\'\"‘’“”‹›«»《》\|‖\=\-\‐\‒\–\—\―_\+\*\^\$£€§%#@&†‡])",
-    'MultiChar': PunktLanguageVars._re_multi_char_punct,
-    'WordStart': r"[^\d\.\?¿؟\!¡！‽…⋯᠁ฯ,،，､、。°※··᛫~\:;;\\\/⧸⁄（）\(\)\[\]\{\}\<\>\'\"‘’“”‹›«»《》\|‖\=\-\‐\‒\–\—\―_\+\*\^\$£€§%#@&†‡]",
-}, re.UNICODE | re.VERBOSE)
-p._re_period_context = re.compile(PunktLanguageVars._period_context_fmt % {
-	'NonWord': r"(?:[\d\.\?¿؟\!¡！‽…⋯᠁ฯ,،，､、。°※··᛫~\:;;\\\/⧸⁄（）\(\)\[\]\{\}\<\>\'\"‘’“”‹›«»《》\|‖\=\-\‐\‒\–\—\―_\+\*\^\$£€§%#@&†‡])",
-	'SentEndChars': p._re_sent_end_chars,
-}, re.UNICODE | re.VERBOSE)
+p._re_word_tokenizer = re.compile(
+	PunktLanguageVars._word_tokenize_fmt % {
+		'NonWord': r"(?:[\d\.\?¿؟\!¡！‽…⋯᠁ฯ,،，､、。°※··᛫~\:;;\\\/⧸⁄（）\(\)\[\]\{\}\<\>\'\"‘’“”‹›«»《》\|‖\=\-\‐\‒\–\—\―_\+\*\^\$£€§%#@&†‡])",
+		'MultiChar': PunktLanguageVars._re_multi_char_punct,
+		'WordStart': r"[^\d\.\?¿؟\!¡！‽…⋯᠁ฯ,،，､、。°※··᛫~\:;;\\\/⧸⁄（）\(\)\[\]\{\}\<\>\'\"‘’“”‹›«»《》\|‖\=\-\‐\‒\–\—\―_\+\*\^\$£€§%#@&†‡]",
+	}, re.UNICODE | re.VERBOSE)
+p._re_period_context = re.compile(
+	PunktLanguageVars._period_context_fmt % {
+		'NonWord': r"(?:[\d\.\?¿؟\!¡！‽…⋯᠁ฯ,،，､、。°※··᛫~\:;;\\\/⧸⁄（）\(\)\[\]\{\}\<\>\'\"‘’“”‹›«»《》\|‖\=\-\‐\‒\–\—\―_\+\*\^\$£€§%#@&†‡])",
+		'SentEndChars': p._re_sent_end_chars,
+	}, re.UNICODE | re.VERBOSE)
 sentence_tokenizer = PunktSentenceTokenizer(lang_vars=p)
 
 class TestParsers(unittest.TestCase):
@@ -36,29 +39,37 @@ class TestParsers(unittest.TestCase):
 	def test_sentence_words1(self):
 		file = 'test test. test test test? test test test; test test. test.'
 		result = textual_feature.tokenize_types['sentence_words']['func'](file)
-		expected = [['test', 'test', '.'], ['test', 'test', 'test', '?', 'test', 'test', 'test', ';'], 
-		['test', 'test', '.'], ['test', '.']]
+		expected = [
+			['test', 'test', '.'], ['test', 'test', 'test', '?', 'test', 'test', 'test', ';'],
+			['test', 'test', '.'], ['test', '.']
+		]
 		self.assertEqual(expected, result)
 
 	def test_sentence_words2(self):
 		file = 'a b ccccccc. aaa aa bb; bb; ads ofiihwio; freino. daieof; frinoe.'
 		result = textual_feature.tokenize_types['sentence_words']['func'](file)
-		expected = [['a', 'b', 'ccccccc', '.'], ['aaa', 'aa', 'bb', ';'], ['bb', ';'], ['ads', 'ofiihwio', ';'], 
-		['freino', '.'], ['daieof', ';'], ['frinoe', '.']]
+		expected = [
+			['a', 'b', 'ccccccc', '.'], ['aaa', 'aa', 'bb', ';'], ['bb', ';'], ['ads', 'ofiihwio', ';'],
+			['freino', '.'], ['daieof', ';'], ['frinoe', '.']
+		]
 		self.assertEqual(expected, result)
 
 	def test_sentence_words3(self):
 		file = 'a b ccccccc. aaa aa bb; bb; ads ofiihwio; freino. daieof; frinoe.'
 		result = textual_feature.tokenize_types['words']['func'](file)
-		expected = ['a', 'b', 'ccccccc', '.', 'aaa', 'aa', 'bb', ';', 'bb', ';', 'ads', 'ofiihwio', ';', 
-		'freino', '.', 'daieof', ';', 'frinoe', '.']
+		expected = [
+			'a', 'b', 'ccccccc', '.', 'aaa', 'aa', 'bb', ';', 'bb', ';', 'ads', 'ofiihwio', ';',
+			'freino', '.', 'daieof', ';', 'frinoe', '.'
+		]
 		self.assertEqual(expected, result)
 
 	def test_sentence_words4(self):
 		file = 'a b ccccccc. aaa aa bb; bb; ads ofiihwio; freino. daieof; frinoe.'
 		result = p.word_tokenize(file)
-		expected = ['a', 'b', 'ccccccc', '.', 'aaa', 'aa', 'bb', ';', 'bb', ';', 'ads', 'ofiihwio', ';', 
-		'freino', '.', 'daieof', ';', 'frinoe', '.']
+		expected = [
+			'a', 'b', 'ccccccc', '.', 'aaa', 'aa', 'bb', ';', 'bb', ';', 'ads', 'ofiihwio', ';',
+			'freino', '.', 'daieof', ';', 'frinoe', '.'
+		]
 		self.assertEqual(expected, result)
 
 	def test_sentence_slant_quote(self):
@@ -84,7 +95,7 @@ class TestParsers(unittest.TestCase):
 		result = textual_feature.tokenize_types['sentences']['func'](s)
 		expected = ['καὶ εὑρέθησαν οὕτω.', "Μόψος δὲ συὸς οὔσης ἐπιτόκου ἠρώτα Κάλχαντα, πόσους χοίρους κατὰ γαστρὸς ἔχει καὶ πότε τέκοι:τοῦ δὲ εἰπόντος: “ὀκτώ,” μειδιάσας ὁ Μόψος ἔφη: “Κάλχας τῆς ἀκριβοῦς μαντείας ἀπεναντιῶς διακεῖται, ἐγὼ δ' ̓Απόλλωνος καὶ Μαντοῦς παῖς ὑπάρχων τῆς ἀκριβοῦς μαντείας τὴν ὀξυδορκίαν πάντως πλουτῶ, καὶ οὐχ ὡς ὁ Κάλχας ὀκτώ, ἀλλ' ἐννέα κατὰ γαστρός, καὶ τούτους ἄρρενας ὅλους ἔχειν μαντεύομαι, καὶ αὔριον ἀνυπερθέτως ἐν ἕκτῃ ὥρᾳ τεχθήσεσθαι.", "”ὧν γενομένων Κάλχας ἀθυμήσας ἀπέθανεκαὶ ἐτάφη ἐν Νοτίῳ."]
 		self.assertEqual(expected, result)
-	
+
 	def test_numbers(self):
 		s = '1234.4321 32. 4324 4321 432 1. 134 52.653 142 41. 41268.'
 		result = textual_feature.tokenize_types['sentences']['func'](s)
