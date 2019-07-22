@@ -57,7 +57,7 @@ output_file - the file to output the results into, created to be analyzed during
 In order for sentence tokenization to work correctly, setup_tokenizers() must be set to the 
 terminal punctuation marks of the language being analyzed. Make sure this is done before main() is called.
 '''
-from context import qcrit
+import context #pylint: disable=unused-import
 import qcrit.extract_features
 from qcrit.textual_feature import textual_feature, setup_tokenizers
 from functools import reduce
@@ -177,7 +177,7 @@ Feature importances:
 	0.200000: mean_sentence_length
 
 
-Elapsed time: 0.0222 seconds
+Elapsed time: 0.0154 seconds
 
 ----------------------------------------
 Random Forest Classifier accuracy
@@ -187,22 +187,22 @@ Stats:
 	Percentage correct: 50.0%
 
 
-Elapsed time: 0.0099 seconds
+Elapsed time: 0.0087 seconds
 
 ----------------------------------------
 Random Forest Classifier misclassified texts
 
 Train texts:
-	./aristotle.metaphysics.tess
+	./aristotle.poetics.tess
 	./aristophanes.ecclesiazusae.tess
 
 Test texts:
 	./euripides.heracles.tess
-	./plato.respublica.tess
+	./plato.respublica.part.1.tess
 
 Misclassifications:
-	./plato.respublica.tess
+	./plato.respublica.part.1.tess
 
 
-Elapsed time: 0.0102 seconds
+Elapsed time: 0.0104 seconds
 '''
