@@ -10,6 +10,7 @@ nltk = "*"
 [dev-packages]
 pylint = "*"
 twine = "*"
+scikit-learn = "*"
 
 [requires]
 python_version = "3.6"

@@ -12,3 +12,9 @@ pip install qcrit
 python setup.py bdist_wheel sdist
 twine upload dist/*
 ```
+
+## Development
+```bash
+pipenv shell
+pipenv install --dev
+```
