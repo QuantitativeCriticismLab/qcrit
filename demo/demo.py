@@ -7,10 +7,12 @@
 '''
 
 import os
+
+_CURRENT_DIR = os.path.dirname(__file__)
 #If the output file already exists, the feature extraction code will not override it
 #Delete the output file so that the demo can create one
-if os.path.isfile(os.path.join('.', 'output.pickle')):
-	os.system('rm ' + os.path.join('.', 'output.pickle'))
+if os.path.isfile(os.path.join(_CURRENT_DIR, 'output.pickle')):
+	os.system('rm ' + os.path.join(_CURRENT_DIR, 'output.pickle'))
 
 #******************************************************************************************************************
 '''
@@ -85,8 +87,9 @@ def mean_sentence_length(text): #parameter must be the text of a file
 def num_interrogatives(text): #parameter must be the text of a file
 	return text.count(';')
 
-
-qcrit.extract_features.main(corpus_dir='.', file_extension='tess', output_file=os.path.join('.', 'output.pickle'))
+qcrit.extract_features.main(
+	corpus_dir=_CURRENT_DIR, file_extension='tess', output_file=os.path.join(_CURRENT_DIR, 'output.pickle')
+)
 '''
 Extracting features from .tess files in .
 Progress |███████████████████████████████████████████| 100.0% (4 of 4 files)
@@ -166,7 +169,9 @@ def misclassified_texts(data, target, file_names, feature_names, labels_key):
 		if results[i] != labels_test[i]:
 			print('\t' + file_names[idx_test[i]])
 
-qcrit.analyze_models.main('./output.pickle', './classifications.csv')
+qcrit.analyze_models.main(
+	os.path.join(_CURRENT_DIR, 'output.pickle'), os.path.join(_CURRENT_DIR, 'classifications.csv')
+)
 '''
 ----------------------------------------
 Random Forest Classifier feature rankings
@@ -177,7 +182,7 @@ Feature importances:
 	0.200000: mean_sentence_length
 
 
-Elapsed time: 0.0154 seconds
+Elapsed time: 0.0122 seconds
 
 ----------------------------------------
 Random Forest Classifier accuracy
@@ -187,22 +192,22 @@ Stats:
 	Percentage correct: 50.0%
 
 
-Elapsed time: 0.0087 seconds
+Elapsed time: 0.0085 seconds
 
 ----------------------------------------
 Random Forest Classifier misclassified texts
 
 Train texts:
-	./aristotle.poetics.tess
-	./aristophanes.ecclesiazusae.tess
+	demo/aristotle.poetics.tess
+	demo/aristophanes.ecclesiazusae.tess
 
 Test texts:
-	./euripides.heracles.tess
-	./plato.respublica.part.1.tess
+	demo/euripides.heracles.tess
+	demo/plato.respublica.part.1.tess
 
 Misclassifications:
-	./plato.respublica.part.1.tess
+	demo/plato.respublica.part.1.tess
 
 
-Elapsed time: 0.0104 seconds
+Elapsed time: 0.0082 seconds
 '''

@@ -1,6 +1,6 @@
 verse:0,prose:1
 Filename,Label
-./aristophanes.ecclesiazusae.tess,0
-./aristotle.poetics.tess,1
-./euripides.heracles.tess,0
-./plato.respublica.part.1.tess,1
+demo/aristophanes.ecclesiazusae.tess,0
+demo/aristotle.poetics.tess,1
+demo/euripides.heracles.tess,0
+demo/plato.respublica.part.1.tess,1
