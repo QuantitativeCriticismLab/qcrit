@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
 #pylint: disable = missing-docstring, blacklisted-name, unused-argument, invalid-name, line-too-long, protected-access
 import unittest
 import re
 
 from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktLanguageVars
 
-from . import textual_feature
+import context #pylint: disable=unused-import
+from qcrit import textual_feature
 
 #[^\s\d’”\'\"）\)\]\}\.,:;]
 #[“‘—\-†&vâ\*\^（α-ωΑ-Ὠ`̔]

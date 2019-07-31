@@ -1,8 +1,9 @@
-#pylint: disable = missing-docstring, blacklisted-name, unused-argument, invalid-name
+#pylint: disable = missing-docstring, blacklisted-name, unused-argument, invalid-name, unexpected-keyword-arg
 '''Test decorators'''
 import unittest
 
-from .textual_feature import textual_feature, decorated_features, \
+import context #pylint: disable=unused-import
+from qcrit.textual_feature import textual_feature, decorated_features, \
 	tokenize_types, clear_cache, debug_output, setup_tokenizers
 
 setup_tokenizers(terminal_punctuation=('.', '?')) #'FULL STOP', 'SEMICOLON', 'GREEK QUESTION MARK'
@@ -73,21 +74,31 @@ class TestTextualFeature(unittest.TestCase):
 	def test_sentence_tokenization(self):
 		file = 'test test. test test test test test test? test test. test.'
 		filename = 'abc/def'
-		self.assertEqual(return_sentences(text=file, filepath=filename), ['test test.', 'test test test test test test?', \
-			'test test.', 'test.'])
+		self.assertEqual(return_sentences(text=file, filepath=filename), [
+			'test test.',
+			'test test test test test test?',
+			'test test.', 'test.'
+		])
 
 	def test_word_tokenization(self):
 		file = 'test test. test test test test test test? test test. test.'
 		filename = 'abc/def'
-		self.assertEqual(return_words(text=file, filepath=filename), ['test', 'test', '.', 'test', 'test', 'test', 'test', \
-			'test', 'test', '?', 'test', 'test', '.', 'test', '.'])
+		self.assertEqual(return_words(text=file, filepath=filename), [
+			'test', 'test', '.', 'test', 'test', 'test', 'test',
+			'test', 'test', '?', 'test', 'test', '.', 'test', '.'
+		])
 
 	def test_loop_over_all_features(self):
 		file = 'test test. test test test test test test? test test. test.'
 		filename = 'abc/def'
-		outputs = ['foo', 'bar', 'taz', 'qux', 'rup', 'lon', ['test test.', 'test test test test test test?', \
-			'test test.', 'test.'], ['test', 'test', '.', 'test', 'test', 'test', 'test', 'test', 'test', '?', 'test', \
-			'test', '.', 'test', '.']]
+		outputs = [
+			'foo', 'bar', 'taz', 'qux', 'rup', 'lon',
+			['test test.', 'test test test test test test?', 'test test.', 'test.'],
+			[
+				'test', 'test', '.', 'test', 'test', 'test', 'test', 'test', 'test',
+				'?', 'test', 'test', '.', 'test', '.'
+			]
+		]
 
 		i = 0
 		for feat in decorated_features.values():

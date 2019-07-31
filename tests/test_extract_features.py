@@ -2,8 +2,9 @@
 '''Test feature extraction'''
 import unittest
 
-from .extract_features import main
-from .textual_feature import textual_feature, setup_tokenizers
+import context #pylint: disable=unused-import
+from qcrit.extract_features import main
+from qcrit.textual_feature import textual_feature, setup_tokenizers
 
 #Run this file with "-b" to ignore output in passing tests (failing tests still display output)
 
