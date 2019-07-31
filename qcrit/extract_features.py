@@ -7,9 +7,10 @@ import os
 from os.path import join
 from io import StringIO
 
+from tqdm import tqdm
+
 from .color import GREEN, YELLOW, RESET
 from .textual_feature import decorated_features, clear_cache, tokenize_types, debug_output
-from .progress_bar import print_progress_bar
 
 def parse_tess(file_name):
 	'''Used to parse tess tags found at the beginning of lines of .tess files'''
@@ -54,10 +55,8 @@ def _extract_features(corpus_dir, file_extension, excluded_paths, features, outp
 	print('Extracting features from .' + file_extension + ' files in ' + YELLOW + corpus_dir + RESET)
 
 	#Feature extraction
-	file_no = 1
-	for file_name in file_names:
+	for file_name in file_names if output_file is None else tqdm(file_names, dynamic_ncols=True):
 		text_to_features[file_name] = {}
-
 		file_text = FILE_PARSERS[file_extension](file_name)
 
 		for feature_name, feature_func in feature_tuples:
@@ -65,13 +64,6 @@ def _extract_features(corpus_dir, file_extension, excluded_paths, features, outp
 			text_to_features[file_name][feature_name] = score
 			if output_file is None:
 				print(file_name + ', ' + str(feature_name) + ', ' + GREEN + str(score) + RESET)
-
-		if output_file is not None:
-			print_progress_bar(
-				file_no, len(file_names), prefix='Progress',
-				suffix='(%d of %d files)' % (file_no, len(file_names)), length=43
-			)
-			file_no += 1
 
 	clear_cache(tokenize_types, debug_output)
 

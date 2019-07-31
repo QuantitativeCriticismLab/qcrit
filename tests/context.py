@@ -1,4 +1,3 @@
-#pylint: disable = wrong-import-position, unused-import
 '''
 Providing a 'context' file allows importing from packages in
 different directories. This obviates the need to keep the demo

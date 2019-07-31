@@ -92,7 +92,7 @@ qcrit.extract_features.main(
 )
 '''
 Extracting features from .tess files in .
-Progress |███████████████████████████████████████████| 100.0% (4 of 4 files)
+100%|█████████████████████████████████████████████████████████| 4/4 [00:00<00:00,  8.67it/s]
 Feature mining complete. Attempting to write feature results to "./output.pickle"...
 Success!
 
