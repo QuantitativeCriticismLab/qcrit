@@ -1,8 +1,11 @@
 '''
 ANSI Colors
 '''
-RED = '\033[91m'
-GREEN = '\033[92m'
-YELLOW = '\033[93m'
-PURPLE = '\033[95m'
-RESET = '\033[0m'
+def red(s):
+	return '\033[91m' + s + '\033[0m'
+def green(s):
+	return '\033[92m' + s + '\033[0m'
+def yellow(s):
+	return '\033[93m' + s + '\033[0m'
+def purple(s):
+	return '\033[95m' + s + '\033[0m'

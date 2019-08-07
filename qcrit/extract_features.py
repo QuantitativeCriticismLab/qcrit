@@ -9,7 +9,7 @@ from io import StringIO
 
 from tqdm import tqdm
 
-from .color import GREEN, YELLOW, RESET
+from . import color as c
 from .textual_feature import decorated_features, clear_cache, tokenize_types, debug_output
 
 def parse_tess(file_name):
@@ -52,7 +52,7 @@ def _extract_features(corpus_dir, file_extension, excluded_paths, features, outp
 	file_names = _get_filenames(corpus_dir, file_extension, excluded_paths)
 	feature_tuples = [(name, decorated_features[name]) for name in features]
 	text_to_features = {} #Associates file names to their respective features
-	print('Extracting features from .' + file_extension + ' files in ' + YELLOW + corpus_dir + RESET)
+	print(f'Extracting features from .{file_extension} files in {c.yellow(corpus_dir)}')
 
 	#Feature extraction
 	for file_name in file_names if output_file is None else tqdm(file_names, dynamic_ncols=True):
@@ -63,20 +63,17 @@ def _extract_features(corpus_dir, file_extension, excluded_paths, features, outp
 			score = feature_func(text=file_text, filepath=file_name)
 			text_to_features[file_name][feature_name] = score
 			if output_file is None:
-				print(file_name + ', ' + str(feature_name) + ', ' + GREEN + str(score) + RESET)
+				print(f'{file_name}, {str(feature_name)}, {c.green(str(score))}')
 
 	clear_cache(tokenize_types, debug_output)
 
 	if output_file is not None:
-		print(
-			'Feature mining complete. Attempting to write feature results to "' +
-			YELLOW + output_file + RESET + '"...'
-		)
+		print(f'Feature mining complete. Attempting to write feature results to "{c.yellow(output_file)}"...')
 		with open(output_file, 'wb') as pickle_file:
 			pickle_file.write(pickle.dumps(text_to_features))
-		print(GREEN + 'Success!' + RESET)
+		print(c.green('Success!'))
 
-# file_extension must not include the dot ('.')
+# Keys of file_extension_to_parse_function must not include the dot e.g. use txt not .txt
 # If excluded_paths is given, it must be a set and it can contain files or directories (the directories must
 # end in a file separator e.g. slash on Mac or Linux)
 def main(corpus_dir, file_extension, excluded_paths=None, features=None, output_file=None):
@@ -111,9 +108,10 @@ def main(corpus_dir, file_extension, excluded_paths=None, features=None, output_
 	from timeit import timeit
 	from functools import partial
 	print(
-		'\n\n' + GREEN + 'Feature mining elapsed time: ' + '%.4f' % timeit(
-			partial(_extract_features, corpus_dir, file_extension, excluded_paths, features, output_file),
-			number=1
-		) +
-		' seconds' + RESET
+		'\n\n' + c.green(
+			'Feature mining elapsed time: ' + '%.4f' % timeit(
+				partial(_extract_features, corpus_dir, file_extension, excluded_paths, features, output_file),
+				number=1
+			) + ' seconds'
+		)
 	)

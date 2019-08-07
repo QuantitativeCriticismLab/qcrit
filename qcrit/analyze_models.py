@@ -9,7 +9,7 @@ import pickle
 import numpy as np
 
 from .model_analyzer import DECORATED_ANALYZERS
-from .color import GREEN, RESET
+from . import color as c
 
 def _get_features(feature_data_file):
 	#Obtain features that were previously mined and serialized into a file
@@ -99,9 +99,10 @@ def main(feature_data_file, classification_data_file, model_funcs=None):
 	from timeit import timeit
 	for funcname in model_funcs:
 		print(
-			'\n\n' + GREEN + 'Elapsed time: ' + '%.4f' %
-			timeit(
-				partial(DECORATED_ANALYZERS[funcname], data, target, file_names, feature_names, labels_key), number=1
-			)
-			+ ' seconds' + RESET + '\n'
+			'\n\n' + c.green(
+				'Elapsed time: ' + '%.4f' % timeit(
+					partial(DECORATED_ANALYZERS[funcname], data, target, file_names, feature_names, labels_key),
+					number=1
+				) + ' seconds'
+			) + '\n'
 		)
