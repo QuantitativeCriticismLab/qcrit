@@ -1,5 +1,5 @@
 '''
-Utilities for a featuer extraction
+Utilities for a feature extraction
 '''
 
 import pickle
@@ -29,7 +29,7 @@ FILE_PARSERS = {
 	'tess': parse_tess,
 }
 
-def _get_filenames(corpus_dir, file_extension, excluded_paths):
+def _get_filenames(corpus_dir, file_extensions, excluded_paths):
 	#Obtain all the files to parse by traversing through the corpus directory
 	file_names = []
 	for current_path, current_dir_names, current_file_names in os.walk(corpus_dir, topdown=True):
@@ -43,21 +43,25 @@ def _get_filenames(corpus_dir, file_extension, excluded_paths):
 			del current_dir_names[del_indexes[i]]
 
 		for current_file_name in current_file_names:
-			if current_file_name.endswith('.' + file_extension) \
+			if '.' in current_file_name and current_file_name[current_file_name.rindex('.') + 1:] in file_extensions \
 			and join(current_path, current_file_name) not in excluded_paths:
 				file_names.append(join(current_path, current_file_name))
 	return sorted(file_names)
 
-def _extract_features(corpus_dir, file_extension, excluded_paths, features, output_file):
-	file_names = _get_filenames(corpus_dir, file_extension, excluded_paths)
+def _extract_features(corpus_dir, file_extension_to_parse_function, excluded_paths, features, output_file):
+	file_names = _get_filenames(corpus_dir, file_extension_to_parse_function.keys(), excluded_paths)
 	feature_tuples = [(name, decorated_features[name]) for name in features]
 	text_to_features = {} #Associates file names to their respective features
-	print(f'Extracting features from .{file_extension} files in {c.yellow(corpus_dir)}')
+	print(
+		f'Extracting features from file with extensions '
+		f'[{", ".join(file_extension_to_parse_function.keys())}] in directory {c.yellow(corpus_dir)}'
+	)
 
 	#Feature extraction
 	for file_name in file_names if output_file is None else tqdm(file_names, dynamic_ncols=True):
 		text_to_features[file_name] = {}
-		file_text = FILE_PARSERS[file_extension](file_name)
+		file_extension = file_name[file_name.rindex('.') + 1:]
+		file_text = file_extension_to_parse_function[file_extension](file_name)
 
 		for feature_name, feature_func in feature_tuples:
 			score = feature_func(text=file_text, filepath=file_name)
@@ -76,17 +80,16 @@ def _extract_features(corpus_dir, file_extension, excluded_paths, features, outp
 # Keys of file_extension_to_parse_function must not include the dot e.g. use txt not .txt
 # If excluded_paths is given, it must be a set and it can contain files or directories (the directories must
 # end in a file separator e.g. slash on Mac or Linux)
-def main(corpus_dir, file_extension, excluded_paths=None, features=None, output_file=None):
+def main(corpus_dir, file_extension_to_parse_function, excluded_paths=None, features=None, output_file=None):
 	'''Run feature extraction on all decorated features'''
 	if excluded_paths is None: excluded_paths = set()
 	if features is None: features = decorated_features.keys()
 
 	if not corpus_dir: raise ValueError('Must provide a directory that contains the corpus')
-	if not file_extension: raise ValueError('Must provide a file extension of files to parse')
+	if not file_extension_to_parse_function:
+		raise ValueError('Must provide a mapping from file extensions to functions specifying how to parse them')
 	if not features: raise ValueError('No features were provided')
 	if not os.path.isdir(corpus_dir): raise ValueError('Path "' + corpus_dir + '" is not a valid directory')
-	if not file_extension in FILE_PARSERS:
-		raise ValueError('"' + str(file_extension) + '" is not an available file extension to parse')
 	if not isinstance(excluded_paths, set): raise ValueError('Excluded paths must be in a set')
 	if not all(os.path.isfile(path) or os.path.isdir(path) for path in excluded_paths):
 		raise ValueError('Each path in ' + str(excluded_paths) + ' must be a valid path for a file or directory!')
@@ -110,7 +113,7 @@ def main(corpus_dir, file_extension, excluded_paths=None, features=None, output_
 	print(
 		'\n\n' + c.green(
 			'Feature mining elapsed time: ' + '%.4f' % timeit(
-				partial(_extract_features, corpus_dir, file_extension, excluded_paths, features, output_file),
+				partial(_extract_features, corpus_dir, file_extension_to_parse_function, excluded_paths, features, output_file),
 				number=1
 			) + ' seconds'
 		)
