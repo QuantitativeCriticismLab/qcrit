@@ -88,24 +88,28 @@ def main(corpus_dir, file_extension_to_parse_function, excluded_paths=None, feat
 	if not corpus_dir: raise ValueError('Must provide a directory that contains the corpus')
 	if not file_extension_to_parse_function:
 		raise ValueError('Must provide a mapping from file extensions to functions specifying how to parse them')
+	if None in file_extension_to_parse_function:
+		raise ValueError('Keys of file_extension_to_parse_function must not be None')
+	if not all(callable(f) for f in file_extension_to_parse_function.values()):
+		raise ValueError('The values of file_extension_to_parse_function must be callable')
 	if not features: raise ValueError('No features were provided')
-	if not os.path.isdir(corpus_dir): raise ValueError('Path "' + corpus_dir + '" is not a valid directory')
+	if not os.path.isdir(corpus_dir): raise ValueError(f'Path "{corpus_dir}" is not a valid directory')
 	if not isinstance(excluded_paths, set): raise ValueError('Excluded paths must be in a set')
 	if not all(os.path.isfile(path) or os.path.isdir(path) for path in excluded_paths):
-		raise ValueError('Each path in ' + str(excluded_paths) + ' must be a valid path for a file or directory!')
+		raise ValueError(f'Each path in {str(excluded_paths)} must be a valid path for a file or directory!')
 	if not all(name in decorated_features.keys() for name in features):
 		raise ValueError(
-			'The values in set ' + str(set(features) - decorated_features.keys()) +
-			' are not among the decorated features in ' + str(decorated_features.keys())
+			f'The values in set {str(set(features) - decorated_features.keys())} '
+			f'are not among the decorated features in {str(decorated_features.keys())}'
 		)
 
 	if output_file:
 		if not isinstance(output_file, str): raise ValueError('Output file must be a string for a file path')
-		if os.path.isfile(output_file): raise ValueError('Output file "' + output_file + '" already exists!')
+		if os.path.isfile(output_file): raise ValueError(f'Output file "{output_file}" already exists!')
 		if os.path.isdir(output_file):
-			raise ValueError('The end of the path "' + output_file + '" is a directory - please specify a filename')
+			raise ValueError(f'The end of the path "{output_file}" is a directory - please specify a filename')
 		if os.sep in output_file and not os.path.isdir(os.path.dirname(output_file)):
-			raise ValueError('"' + os.path.dirname(output_file) + '" is not a valid directory!')
+			raise ValueError(f'"{os.path.dirname(output_file)}" is not a valid directory!')
 	elif output_file is not None: raise ValueError('Output file must be truthy, or None')
 
 	from timeit import timeit
