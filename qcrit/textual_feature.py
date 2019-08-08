@@ -5,11 +5,9 @@ from inspect import signature
 from collections import OrderedDict
 from io import StringIO
 
-from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktLanguageVars
+import nltk.tokenize.punkt as punkt
 
 decorated_features = OrderedDict()
-
-# sentence_tokenizer_dir = join(dirname(abspath(__file__)), 'tokenizers')
 lang = None
 word_tokenizer = None
 sentence_tokenizers = None
@@ -42,6 +40,7 @@ tokenize_types = {
 	},
 }
 
+#TODO improve implementation
 def clear_cache(cache, debug):
 	'''Clear tokens from previously parsed texts'''
 	for _, val in cache.items():
@@ -57,12 +56,12 @@ def setup_tokenizers(*, language=None, terminal_punctuation):
 	global sentence_tokenizers
 	global tokenize_types
 	lang = language #TODO validate in this function, not in textual_feature()
-	PunktLanguageVars.sent_end_chars = terminal_punctuation
-	PunktLanguageVars.re_boundary_realignment = re.compile(r'[›»》’”\'\"）\)\]\}\>]+?(?:\s+|(?=--)|$)', re.MULTILINE)
+	punkt.PunktLanguageVars.sent_end_chars = terminal_punctuation
+	punkt.PunktLanguageVars.re_boundary_realignment = re.compile(r'[›»》’”\'\"）\)\]\}\>]+?(?:\s+|(?=--)|$)', re.MULTILINE)
 	clear_cache(tokenize_types, debug_output)
 
 	'''
-	Accessing private variables of PunktLanguageVars because
+	Accessing private variables of punkt.PunktLanguageVars because
 	nltk has a faulty design pattern that necessitates it.
 	Issue reported here: https://github.com/nltk/nltk/issues/2068
 	'''
@@ -71,13 +70,13 @@ def setup_tokenizers(*, language=None, terminal_punctuation):
 	A word tokenizer should strip the non word chars from words,
 	as well as periods and numbers
 	'''
-	word_tokenizer = PunktLanguageVars()
-	word_tokenizer._re_word_tokenizer = re.compile(PunktLanguageVars._word_tokenize_fmt % {
+	word_tokenizer = punkt.PunktLanguageVars()
+	word_tokenizer._re_word_tokenizer = re.compile(punkt.PunktLanguageVars._word_tokenize_fmt % {
 		'NonWord': fr"(?:[\d\.{NON_WORD_CHARS}])",
-		'MultiChar': PunktLanguageVars._re_multi_char_punct,
+		'MultiChar': punkt.PunktLanguageVars._re_multi_char_punct,
 		'WordStart': fr"[^\d\.{NON_WORD_CHARS}]",
 	}, re.UNICODE | re.VERBOSE)
-	word_tokenizer._re_period_context = re.compile(PunktLanguageVars._period_context_fmt % {
+	word_tokenizer._re_period_context = re.compile(punkt.PunktLanguageVars._period_context_fmt % {
 		'NonWord': fr"(?:[\d\.{NON_WORD_CHARS}])",
 		'SentEndChars': word_tokenizer._re_sent_end_chars,
 	}, re.UNICODE | re.VERBOSE)
@@ -88,24 +87,18 @@ def setup_tokenizers(*, language=None, terminal_punctuation):
 	excludes them, and it excludes numbers because we do not want to
 	treat numbers with decimals as if they were sentences
 	'''
-	sent_tok_vars = PunktLanguageVars()
-	sent_tok_vars._re_word_tokenizer = re.compile(PunktLanguageVars._word_tokenize_fmt % {
+	sent_tok_vars = punkt.PunktLanguageVars()
+	sent_tok_vars._re_word_tokenizer = re.compile(punkt.PunktLanguageVars._word_tokenize_fmt % {
 		'NonWord': fr"(?:[{NON_WORD_CHARS}])",
-		'MultiChar': PunktLanguageVars._re_multi_char_punct,
+		'MultiChar': punkt.PunktLanguageVars._re_multi_char_punct,
 		'WordStart': fr"[^{NON_WORD_CHARS}]",
 	}, re.UNICODE | re.VERBOSE)
-	sent_tok_vars._re_period_context = re.compile(PunktLanguageVars._period_context_fmt % {
+	sent_tok_vars._re_period_context = re.compile(punkt.PunktLanguageVars._period_context_fmt % {
 		'NonWord': fr"(?:[{NON_WORD_CHARS}])",
 		'SentEndChars': sent_tok_vars._re_sent_end_chars,
 	}, re.UNICODE | re.VERBOSE)
 
-	sentence_tokenizers = {None: PunktSentenceTokenizer(lang_vars=PunktLanguageVars())}
-	#Read tokenizers from pickle files (also include an untrained tokenizer). Mapping from language name to tokenizer
-	'''dict({None: PunktSentenceTokenizer(lang_vars=PunktLanguageVars())}, **{
-		current_file_name[:current_file_name.index('.')]: pickle.load(open(join(current_path, current_file_name), mode='rb'))
-		for current_path, current_dir_names, current_file_names in os.walk(sentence_tokenizer_dir)
-		for current_file_name in current_file_names if current_file_name.endswith('.pickle')
-	})'''
+	sentence_tokenizers = {None: punkt.PunktSentenceTokenizer(lang_vars=punkt.PunktLanguageVars())}
 	for sen_tkzr in sentence_tokenizers.values():
 		sen_tkzr._lang_vars._re_period_context = sent_tok_vars._re_period_context
 		sen_tkzr._lang_vars._re_word_tokenizer = sent_tok_vars._re_word_tokenizer

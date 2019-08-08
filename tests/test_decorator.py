@@ -3,47 +3,46 @@
 import unittest
 
 import context #pylint: disable=unused-import
-from qcrit.textual_feature import textual_feature, decorated_features, \
-	tokenize_types, clear_cache, debug_output, setup_tokenizers
+import qcrit.textual_feature
 
-setup_tokenizers(terminal_punctuation=('.', '?')) #'FULL STOP', 'SEMICOLON', 'GREEK QUESTION MARK'
+qcrit.textual_feature.setup_tokenizers(terminal_punctuation=('.', '?')) #'FULL STOP', 'SEMICOLON', 'GREEK QUESTION MARK'
 
-@textual_feature(tokenize_type='sentences', debug=True)
+@qcrit.textual_feature.textual_feature(tokenize_type='sentences', debug=True)
 def foo(text):
 	return 'foo'
 
-@textual_feature(tokenize_type='sentences', debug=True)
+@qcrit.textual_feature.textual_feature(tokenize_type='sentences', debug=True)
 def bar(text):
 	return 'bar'
 
-@textual_feature(tokenize_type='words', debug=True)
+@qcrit.textual_feature.textual_feature(tokenize_type='words', debug=True)
 def taz(text):
 	return 'taz'
 
-@textual_feature(tokenize_type='words', debug=True)
+@qcrit.textual_feature.textual_feature(tokenize_type='words', debug=True)
 def qux(text):
 	return 'qux'
 
-@textual_feature(tokenize_type='sentences', debug=True)
+@qcrit.textual_feature.textual_feature(tokenize_type='sentences', debug=True)
 def rup(text):
 	return 'rup'
 
-@textual_feature(tokenize_type='sentences', debug=True)
+@qcrit.textual_feature.textual_feature(tokenize_type='sentences', debug=True)
 def lon(text):
 	return 'lon'
 
-@textual_feature(tokenize_type='sentences', debug=True)
+@qcrit.textual_feature.textual_feature(tokenize_type='sentences', debug=True)
 def return_sentences(text):
 	return text
 
-@textual_feature(tokenize_type='words', debug=True)
+@qcrit.textual_feature.textual_feature(tokenize_type='words', debug=True)
 def return_words(text):
 	return text
 
 class TestTextualFeature(unittest.TestCase):
 
 	def setUp(self):
-		clear_cache(tokenize_types, debug_output)
+		qcrit.textual_feature.clear_cache(qcrit.textual_feature.tokenize_types, qcrit.textual_feature.debug_output)
 
 	def test_cache(self):
 		file = 'test test. test test test test test test? test test. test.'
@@ -52,22 +51,22 @@ class TestTextualFeature(unittest.TestCase):
 		foo(text=file, filepath=filename)
 		bar(text=file, filepath=filename)
 		rup(text=file, filepath=filename)
-		self.assertEqual(debug_output.getvalue(), 'Cache hit! function: <bar>, filepath: abc/def\n' + \
+		self.assertEqual(qcrit.textual_feature.debug_output.getvalue(), 'Cache hit! function: <bar>, filepath: abc/def\n' + \
 			'Cache hit! function: <rup>, filepath: abc/def\n')
 
-		clear_cache(tokenize_types, debug_output)
+		qcrit.textual_feature.clear_cache(qcrit.textual_feature.tokenize_types, qcrit.textual_feature.debug_output)
 
 		filename = 'abc/ghi'
 		foo(text=file, filepath=filename)
 		taz(text=file, filepath=filename)
 		qux(text=file, filepath=filename)
-		self.assertEqual(debug_output.getvalue(), 'Cache hit! function: <qux>, filepath: abc/ghi\n')
+		self.assertEqual(qcrit.textual_feature.debug_output.getvalue(), 'Cache hit! function: <qux>, filepath: abc/ghi\n')
 		filename = 'abc/jkl'
 		foo(text=file, filepath=filename)
 		bar(text=file, filepath=filename)
 		taz(text=file, filepath=filename)
 		qux(text=file, filepath=filename)
-		self.assertEqual(debug_output.getvalue(), 'Cache hit! function: <qux>, filepath: abc/ghi\n' + \
+		self.assertEqual(qcrit.textual_feature.debug_output.getvalue(), 'Cache hit! function: <qux>, filepath: abc/ghi\n' + \
 			'Cache hit! function: <bar>, filepath: abc/jkl\n' + \
 			'Cache hit! function: <qux>, filepath: abc/jkl\n')
 
@@ -101,7 +100,7 @@ class TestTextualFeature(unittest.TestCase):
 		]
 
 		i = 0
-		for feat in decorated_features.values():
+		for feat in qcrit.textual_feature.decorated_features.values():
 			self.assertEqual(feat(text=file, filepath=filename), outputs[i])
 			i += 1
 

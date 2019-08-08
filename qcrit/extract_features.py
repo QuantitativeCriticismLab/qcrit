@@ -6,11 +6,12 @@ import pickle
 import os
 from os.path import join
 from io import StringIO
+import collections as clctn
 
 from tqdm import tqdm
 
 from . import color as c
-from .textual_feature import decorated_features, clear_cache, tokenize_types, debug_output
+from . import textual_feature
 
 def parse_tess(file_name):
 	'''Used to parse tess tags found at the beginning of lines of .tess files'''
@@ -50,7 +51,7 @@ def _get_filenames(corpus_dir, file_extensions, excluded_paths):
 
 def _extract_features(corpus_dir, file_extension_to_parse_function, excluded_paths, features, output_file):
 	file_names = _get_filenames(corpus_dir, file_extension_to_parse_function.keys(), excluded_paths)
-	feature_tuples = [(name, decorated_features[name]) for name in features]
+	feature_tuples = [(name, textual_feature.decorated_features[name]) for name in features]
 	text_to_features = {} #Associates file names to their respective features
 	print(
 		f'Extracting features from file with extensions '
@@ -69,7 +70,7 @@ def _extract_features(corpus_dir, file_extension_to_parse_function, excluded_pat
 			if output_file is None:
 				print(f'{file_name}, {str(feature_name)}, {c.green(str(score))}')
 
-	clear_cache(tokenize_types, debug_output)
+	textual_feature.clear_cache(textual_feature.tokenize_types, textual_feature.debug_output)
 
 	if output_file is not None:
 		print(f'Feature mining complete. Attempting to write feature results to "{c.yellow(output_file)}"...')
@@ -83,13 +84,13 @@ def _extract_features(corpus_dir, file_extension_to_parse_function, excluded_pat
 def main(corpus_dir, file_extension_to_parse_function, excluded_paths=None, features=None, output_file=None):
 	'''Run feature extraction on all decorated features'''
 	if excluded_paths is None: excluded_paths = set()
-	if features is None: features = decorated_features.keys()
+	if features is None: features = textual_feature.decorated_features.keys()
 
 	if not corpus_dir: raise ValueError('Must provide a directory that contains the corpus')
-	if not file_extension_to_parse_function:
+	if not file_extension_to_parse_function or not isinstance(file_extension_to_parse_function, clctn.Mapping):
 		raise ValueError('Must provide a mapping from file extensions to functions specifying how to parse them')
 	if None in file_extension_to_parse_function:
-		raise ValueError('Keys of file_extension_to_parse_function must not be None')
+		raise ValueError('The keys of file_extension_to_parse_function must not be None')
 	if not all(callable(f) for f in file_extension_to_parse_function.values()):
 		raise ValueError('The values of file_extension_to_parse_function must be callable')
 	if not features: raise ValueError('No features were provided')
@@ -97,10 +98,10 @@ def main(corpus_dir, file_extension_to_parse_function, excluded_paths=None, feat
 	if not isinstance(excluded_paths, set): raise ValueError('Excluded paths must be in a set')
 	if not all(os.path.isfile(path) or os.path.isdir(path) for path in excluded_paths):
 		raise ValueError(f'Each path in {str(excluded_paths)} must be a valid path for a file or directory!')
-	if not all(name in decorated_features.keys() for name in features):
+	if not all(name in textual_feature.decorated_features.keys() for name in features):
 		raise ValueError(
-			f'The values in set {str(set(features) - decorated_features.keys())} '
-			f'are not among the decorated features in {str(decorated_features.keys())}'
+			f'The values in set {str(set(features) - textual_feature.decorated_features.keys())} '
+			f'are not among the decorated features in {str(textual_feature.decorated_features.keys())}'
 		)
 
 	if output_file:

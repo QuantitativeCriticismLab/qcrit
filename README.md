@@ -48,24 +48,24 @@ def mean_sentence_len(text):
 	return sen_len / num_sentences
 ```
 
-Use `extract_features.main` to run all the functions labeled with the decorators and output results into a file.
+Use `qcrit.extract_features.main` to run all the functions labeled with the decorators and output results into a file.
 
 corpus_dir - the directory to search for files containing texts, this will traverse all sub-directories as well
 
-file_extension - restrict search to only files with this extension, handles parsing out of unnecessary tags, 
-                 currently only supports .tess but easily extensible to xml, txt, etc.
+file_extension_to_parse_function - map from file extension (e.g. 'txt', 'tess') of texts that you would like to parse to a function directing how to parse it
 
 output_file - the file to output the results into, created to be analyzed during machine learning phase
 
 In order for sentence tokenization to work correctly, setup_tokenizers() must be set to the 
-terminal punctuation marks of the language being analyzed. Make sure this is done before main() is called.
+terminal punctuation marks of the language being analyzed. Make sure this is done before features are declared.
 
 ```python
+from qcrit.extract_features import main, parse_tess
 from qcrit.textual_feature import setup_tokenizers
-import qcrit.extract_features
-setup_tokenizers(terminal_punctuation=('.', ';'))
-qcrit.extract_features.main(
-	corpus_dir='demo', file_extension='tess', output_file='output.pickle'
+setup_tokenizers(terminal_punctuation=('.', '?'))
+from somewhere_else import count_definite_article, mean_sentence_len
+main(
+	corpus_dir='demo', file_extension_to_parse_function={'tess': parse_tess}, output_file='output.pickle'
 )
 
 ```
