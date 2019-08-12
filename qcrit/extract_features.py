@@ -70,7 +70,7 @@ def _extract_features(corpus_dir, file_extension_to_parse_function, excluded_pat
 			if output_file is None:
 				print(f'{file_name}, {str(feature_name)}, {c.green(str(score))}')
 
-	textual_feature.clear_cache(textual_feature.tokenize_types, textual_feature.debug_output)
+	textual_feature.clear_cache()
 
 	if output_file is not None:
 		print(f'Feature mining complete. Attempting to write feature results to "{c.yellow(output_file)}"...')
@@ -81,6 +81,7 @@ def _extract_features(corpus_dir, file_extension_to_parse_function, excluded_pat
 # Keys of file_extension_to_parse_function must not include the dot e.g. use txt not .txt
 # If excluded_paths is given, it must be a set and it can contain files or directories (the directories must
 # end in a file separator e.g. slash on Mac or Linux)
+#pylint: disable = too-many-branches
 def main(corpus_dir, file_extension_to_parse_function, excluded_paths=None, features=None, output_file=None):
 	'''Run feature extraction on all decorated features'''
 	if excluded_paths is None: excluded_paths = set()

@@ -5,7 +5,7 @@ import unittest
 import context #pylint: disable=unused-import
 import qcrit.textual_feature
 
-qcrit.textual_feature.setup_tokenizers(terminal_punctuation=('.', '?')) #'FULL STOP', 'SEMICOLON', 'GREEK QUESTION MARK'
+qcrit.textual_feature.setup_tokenizers(terminal_punctuation=('.', '?'))
 
 @qcrit.textual_feature.textual_feature(tokenize_type='sentences', debug=True)
 def foo(text):
@@ -42,7 +42,7 @@ def return_words(text):
 class TestTextualFeature(unittest.TestCase):
 
 	def setUp(self):
-		qcrit.textual_feature.clear_cache(qcrit.textual_feature.tokenize_types, qcrit.textual_feature.debug_output)
+		qcrit.textual_feature.clear_cache()
 
 	def test_cache(self):
 		file = 'test test. test test test test test test? test test. test.'
@@ -51,24 +51,36 @@ class TestTextualFeature(unittest.TestCase):
 		foo(text=file, filepath=filename)
 		bar(text=file, filepath=filename)
 		rup(text=file, filepath=filename)
-		self.assertEqual(qcrit.textual_feature.debug_output.getvalue(), 'Cache hit! function: <bar>, filepath: abc/def\n' + \
-			'Cache hit! function: <rup>, filepath: abc/def\n')
+		self.assertEqual(
+			qcrit.textual_feature.debug_output.getvalue(), 'Cache hit! function: <bar>, filepath: abc/def\n' +
+			'Cache hit! function: <rup>, filepath: abc/def\n'
+		)
 
-		qcrit.textual_feature.clear_cache(qcrit.textual_feature.tokenize_types, qcrit.textual_feature.debug_output)
+		self.assertEqual(qcrit.textual_feature.tokenize_types['sentences']['prev_filepath'], 'abc/def')
+		self.assertEqual(qcrit.textual_feature.tokenize_types['sentences']['tokens'], ['test test.', 'test test test test test test?', 'test test.', 'test.'])
+
+		qcrit.textual_feature.clear_cache()
+
+		self.assertEqual(qcrit.textual_feature.tokenize_types[None]['prev_filepath'], None)
+		self.assertEqual(qcrit.textual_feature.tokenize_types[None]['tokens'], None)
 
 		filename = 'abc/ghi'
 		foo(text=file, filepath=filename)
 		taz(text=file, filepath=filename)
 		qux(text=file, filepath=filename)
-		self.assertEqual(qcrit.textual_feature.debug_output.getvalue(), 'Cache hit! function: <qux>, filepath: abc/ghi\n')
+		self.assertEqual(
+			qcrit.textual_feature.debug_output.getvalue(), 'Cache hit! function: <qux>, filepath: abc/ghi\n'
+		)
 		filename = 'abc/jkl'
 		foo(text=file, filepath=filename)
 		bar(text=file, filepath=filename)
 		taz(text=file, filepath=filename)
 		qux(text=file, filepath=filename)
-		self.assertEqual(qcrit.textual_feature.debug_output.getvalue(), 'Cache hit! function: <qux>, filepath: abc/ghi\n' + \
+		self.assertEqual(
+			qcrit.textual_feature.debug_output.getvalue(), 'Cache hit! function: <qux>, filepath: abc/ghi\n' +
 			'Cache hit! function: <bar>, filepath: abc/jkl\n' + \
-			'Cache hit! function: <qux>, filepath: abc/jkl\n')
+			'Cache hit! function: <qux>, filepath: abc/jkl\n'
+		)
 
 	def test_sentence_tokenization(self):
 		file = 'test test. test test test test test test? test test. test.'

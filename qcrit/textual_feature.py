@@ -40,14 +40,15 @@ tokenize_types = {
 	},
 }
 
-#TODO improve implementation
-def clear_cache(cache, debug):
+def clear_cache():
 	'''Clear tokens from previously parsed texts'''
-	for _, val in cache.items():
+	global tokenize_types
+	global debug_output
+	for _, val in tokenize_types.items():
 		val['prev_filepath'] = None
 		val['tokens'] = None
-	debug.truncate(0)
-	debug.seek(0)
+	debug_output.truncate(0)
+	debug_output.seek(0)
 
 def setup_tokenizers(*, language=None, terminal_punctuation):
 	'''Initialize the word tokenizer and sentence tokenizer given the terminal punctuation'''
@@ -58,7 +59,7 @@ def setup_tokenizers(*, language=None, terminal_punctuation):
 	lang = language #TODO validate in this function, not in textual_feature()
 	punkt.PunktLanguageVars.sent_end_chars = terminal_punctuation
 	punkt.PunktLanguageVars.re_boundary_realignment = re.compile(r'[›»》’”\'\"）\)\]\}\>]+?(?:\s+|(?=--)|$)', re.MULTILINE)
-	clear_cache(tokenize_types, debug_output)
+	clear_cache()
 
 	'''
 	Accessing private variables of punkt.PunktLanguageVars because
