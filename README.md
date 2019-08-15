@@ -16,7 +16,7 @@ The qcrit package contains utilities to facilitate processing and analyzing lite
 
 ### Feature extraction
 
-A feature is a number that results from processing literature. Examples of features include the number of definite articles and the mean sentence length. The word "feature" can also refer to a python function that computes such a value.
+A feature is a number that results from processing literature. An example of a feature might be the number of definite articles, the mean sentence length, or the fraction of interrogative sentences. The word "feature" can also refer to a python function that computes such a value.
 
 To compute features, you must 1) traverse each text in a corpus, 2) parse the text into tokens, 3) write logic to calculate features, and 4) output the results to the console or to a file. Also, this will run slowly unless you 5) cache tokenized text for features that use the same tokens.
 

@@ -126,9 +126,9 @@ def textual_feature(*, tokenize_type=None, debug=False):
 		sig_params = signature(f).parameters
 		if not all(tok in sig_params for tok in reqrd_params):
 			raise ValueError(
-				'Error for "' + f.__name__
-				+ '":\nMinimal required parameters: ' + str(reqrd_params)
-				+ '\nFound parameters: ' + str(set(sig_params))
+				f'Error for feature "{f.__name__}"'
+				f'\nMinimal required parameters: {str(reqrd_params)}'
+				f'\nFound parameters: {set(sig_params) if sig_params else "{}"}'
 			)
 		def wrapper(*, text, filepath=None):
 			if not filepath:

@@ -8,7 +8,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
 	name='qcrit',
-	version='0.0.10',
+	version='0.0.11',
 	author='Tim Gianitsos',
 	author_email='contact@qcrit.org',
 	description='Quantitative Criticism Lab',

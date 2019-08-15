@@ -8,7 +8,7 @@ import pickle
 
 import numpy as np
 
-from .model_analyzer import DECORATED_ANALYZERS
+from . import model_analyzer
 from . import color as c
 
 def _get_features(feature_data_file):
@@ -58,15 +58,15 @@ def _get_classifier_data(filename_to_features, filename_to_classification, file_
 def main(feature_data_file, classification_data_file, model_funcs=None):
 	'''Runs all decorated model analyzers'''
 
-	if model_funcs is None: model_funcs = DECORATED_ANALYZERS.keys()
+	if model_funcs is None: model_funcs = model_analyzer.DECORATED_ANALYZERS.keys()
 	if not os.path.isfile(feature_data_file): raise ValueError('File "' + feature_data_file + '" does not exist')
 	if not os.path.isfile(classification_data_file):
 		raise ValueError('File "' + classification_data_file + '" does not exist')
 	if not model_funcs: raise ValueError('No model analyzers were provided')
-	if not all(f in DECORATED_ANALYZERS for f in model_funcs):
+	if not all(f in model_analyzer.DECORATED_ANALYZERS for f in model_funcs):
 		raise ValueError(
-			'The values in set ' + str(set(model_funcs) - DECORATED_ANALYZERS.keys()) +
-			' are not among the decorated model analyzers in ' + str(DECORATED_ANALYZERS.keys())
+			'The values in set ' + str(set(model_funcs) - model_analyzer.DECORATED_ANALYZERS.keys()) +
+			' are not among the decorated model analyzers in ' + str(model_analyzer.DECORATED_ANALYZERS.keys())
 		)
 
 	filename_to_features = _get_features(feature_data_file)
@@ -101,7 +101,7 @@ def main(feature_data_file, classification_data_file, model_funcs=None):
 		print(
 			'\n\n' + c.green(
 				'Elapsed time: ' + '%.4f' % timeit(
-					partial(DECORATED_ANALYZERS[funcname], data, target, file_names, feature_names, labels_key),
+					partial(model_analyzer.DECORATED_ANALYZERS[funcname], data, target, file_names, feature_names, labels_key),
 					number=1
 				) + ' seconds'
 			) + '\n'
