@@ -108,7 +108,10 @@ def textual_feature(*, tokenize_type=None, debug=False):
 	'''Decorator for textual features'''
 	global lang
 	if not (word_tokenizer and sentence_tokenizers):
-		raise ValueError('Tokenizers not initialized: Use "setup_tokenizers(terminal_punctuation=<collection of punctutation>)"')
+		raise ValueError(
+			f'Tokenizers not initialized: Use '
+			f'"setup_tokenizers(terminal_punctuation=<collection of punctutation>)" before decorating a function'
+		)
 	if tokenize_type not in tokenize_types:
 		raise ValueError(
 			'"' + str(tokenize_type) + '" is not a valid tokenize type: Choose from among ' +
@@ -116,8 +119,8 @@ def textual_feature(*, tokenize_type=None, debug=False):
 		)
 	if lang not in sentence_tokenizers:
 		raise ValueError(
-			'"' + str(lang) + '" is not an available language: Choose from among ' +
-			str(list(sentence_tokenizers.keys()))
+			f'"{str(lang)}" is not an available language. Choose from among '
+			f'{list(sentence_tokenizers.keys())}'
 		)
 	def decor(f):
 		#TODO make this more extensible. Use keyword args somehow instead of 'text' parameter?

@@ -94,7 +94,16 @@ def main(corpus_dir, file_extension_to_parse_function, excluded_paths=None, feat
 		raise ValueError('The keys of file_extension_to_parse_function must not be None')
 	if not all(callable(f) for f in file_extension_to_parse_function.values()):
 		raise ValueError('The values of file_extension_to_parse_function must be callable')
-	if not features: raise ValueError('No features were provided')
+	if any('.' in extension for extension in file_extension_to_parse_function.keys()):
+		raise ValueError(
+			f'The following extensions contain a period. '
+			f'Please remove the periods: {list(filter(lambda x: "." in x, file_extension_to_parse_function.keys()))}'
+		)
+	if not features:
+		raise ValueError(
+			f'No features were provided. Ensure you have declared and annotated '
+			f'them with the decorator @textual_feature before calling this function'
+		)
 	if not os.path.isdir(corpus_dir): raise ValueError(f'Path "{corpus_dir}" is not a valid directory')
 	if not isinstance(excluded_paths, set): raise ValueError('Excluded paths must be in a set')
 	if not all(os.path.isfile(path) or os.path.isdir(path) for path in excluded_paths):
