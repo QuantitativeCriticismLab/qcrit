@@ -22,11 +22,9 @@ def _get_features(feature_data_file):
 #demarcate a csv cell
 def _get_file_classifications(classification_data_file):
 	#Obtain classifications for each file
-	filename_to_classification = {}
 	with open(classification_data_file, mode='r') as classification_file:
-		#TODO labels_key is a confusing variable name for a dictionary
-		#TODO labels_key is declared in "with" block, but is returned external to it - fix this
-		labels_key = OrderedDict(
+		filename_to_classification = {}
+		label_val_to_label_name = OrderedDict(
 			(np.float64(tok.split(':')[1]), tok.split(':')[0])
 			for tok in classification_file.readline().strip().split(',')
 		)
@@ -34,8 +32,8 @@ def _get_file_classifications(classification_data_file):
 		for line in classification_file:
 			line = line.strip().split(',')
 			filename_to_classification[line[0]] = np.float64(line[1])
-		assert all(v in labels_key.keys() for v in filename_to_classification.values())
-	return filename_to_classification, labels_key
+		assert all(v in label_val_to_label_name.keys() for v in filename_to_classification.values())
+	return filename_to_classification, label_val_to_label_name
 
 def _get_classifier_data(filename_to_features, filename_to_classification, file_names, feature_names):
 	data_1d = [filename_to_features[file_name][feature] for file_name in file_names for feature in feature_names]
@@ -71,28 +69,26 @@ def main(feature_data_file, classification_data_file, model_funcs=None):
 
 	filename_to_features = _get_features(feature_data_file)
 
-	filename_to_classification, labels_key = _get_file_classifications(classification_data_file)
+	filename_to_classification, label_val_to_label_name = _get_file_classifications(classification_data_file)
 
 	if filename_to_features.keys() - filename_to_classification.keys():
 		raise ValueError(
-			'There exist some files for which no label exists: {\n\t' +
+			'There exist some files in the feature_data_file for which no label exists in '
+			'the classification_data_file: {\n\t'
 			'\n\t'.join(filename_to_features.keys() - filename_to_classification.keys()) + '\n}'
 		)
 
-	#Filter out unused labels (i.e. a label exists but no files are assigned that label)
-	#TODO we probably don't want to filter here, instead we could remove these two lines,
-	#	and fix the divide by zero issue
-	#TODO as a special case in ml_analyzers
+	#Filter out unused labels (i.e. a label exists for a file with that name but no features were extracted for it)
 	used_label_numbers = {filename_to_classification[filename] for filename in filename_to_features.keys()}
-	labels_key = OrderedDict((k, v) for k, v in labels_key.items() if k in used_label_numbers)
+	label_val_to_label_name = OrderedDict(
+		(k, v) for k, v in label_val_to_label_name.items() if k in used_label_numbers
+	)
 
 	#Convert features and classifications into sorted lists
 	file_names = sorted([elem for elem in filename_to_features.keys()])
-	#TODO we're doing repeated work
-	feature_names = sorted(list({
-		feature for feature_to_val in filename_to_features.values()
-		for feature in feature_to_val.keys()
-	}))
+	feature_names = sorted(
+		feature_name for feature_name in next(iter(filename_to_features.values())).keys()
+	)
 
 	data, target = _get_classifier_data(filename_to_features, filename_to_classification, file_names, feature_names)
 
@@ -101,7 +97,10 @@ def main(feature_data_file, classification_data_file, model_funcs=None):
 		print(
 			'\n\n' + c.green(
 				'Elapsed time: ' + '%.4f' % timeit(
-					partial(model_analyzer.DECORATED_ANALYZERS[funcname], data, target, file_names, feature_names, labels_key),
+					partial(
+						model_analyzer.DECORATED_ANALYZERS[funcname], data, target, file_names,
+						feature_names, label_val_to_label_name
+					),
 					number=1
 				) + ' seconds'
 			) + '\n'
