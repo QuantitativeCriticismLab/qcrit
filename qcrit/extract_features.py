@@ -128,7 +128,10 @@ def main(corpus_dir, file_extension_to_parse_function, excluded_paths=None, feat
 	print(
 		'\n\n' + c.green(
 			'Feature mining elapsed time: ' + '%.4f' % timeit(
-				partial(_extract_features, corpus_dir, file_extension_to_parse_function, excluded_paths, features, output_file),
+				partial(
+					_extract_features, corpus_dir, file_extension_to_parse_function,
+					excluded_paths, features, output_file
+				),
 				number=1
 			) + ' seconds'
 		)

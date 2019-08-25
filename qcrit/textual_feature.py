@@ -1,4 +1,4 @@
-#pylint: disable = protected-access
+#pylint: disable = protected-access, invalid-name, unnecessary-lambda
 '''Utilities for textual feature decorator'''
 import re
 from inspect import signature
