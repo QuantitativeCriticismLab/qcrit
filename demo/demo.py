@@ -38,7 +38,9 @@ def num_interrogatives(text): #parameter must be the text of a file
 	return text.count(';')
 
 qcrit.extract_features.main(
-	corpus_dir=_CURRENT_DIR, file_extension_to_parse_function={'tess': qcrit.extract_features.parse_tess}, output_file=os.path.join(_CURRENT_DIR, 'output.pickle')
+	corpus_dir=_CURRENT_DIR,
+	file_extension_to_parse_function={'tess': qcrit.extract_features.parse_tess},
+	output_file=os.path.join(_CURRENT_DIR, 'output.pickle')
 )
 
 import qcrit.analyze_models
