@@ -193,9 +193,11 @@ Misclassifications:
 
 Elapsed time: 0.0082 seconds
 ```
+
 ## Development
-To activate the virtual environment, ensure that you have pipenv installed, and run the following:
+To activate the virtual environment, ensure that you have `pipenv` installed and `python` version 3.6 installed. Run the following:
 ```bash
+pipenv --python 3.6
 pipenv shell
 pipenv install --dev
 ```
@@ -206,7 +208,7 @@ python demo/demo.py
 ```
 
 ## Submission
-The following commands will submit the package to the `Python Package Index`. It may be necessary to increment the version number in `setup.py` and to delete any previously generated `dist/` and `build/` directories.
+The following commands will submit the package to the `Python Package Index`. It may be necessary to increment the version number in `setup.py` and to delete any previously generated `dist/` and `build/` directories if they exist.
 ```bash
 python setup.py bdist_wheel sdist
 twine upload dist/*
