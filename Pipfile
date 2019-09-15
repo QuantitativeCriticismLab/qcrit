@@ -12,6 +12,7 @@ tqdm = "*"
 pylint = "*"
 twine = "*"
 scikit-learn = "*"
+pipfile = "*"
 
 [requires]
 python_version = "3.6"
