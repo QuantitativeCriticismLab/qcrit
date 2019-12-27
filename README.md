@@ -208,7 +208,7 @@ python demo/demo.py
 ```
 
 ## Submission
-The following commands will submit the package to the `Python Package Index`. It may be necessary to increment the version number in `setup.py` and to delete any previously generated `dist/` and `build/` directories if they exist.
+The following commands will submit the package to the `Python Package Index`. Before running them, it may be necessary to increment the version number in `setup.py` and to delete any previously generated `dist/` and `build/` directories if they exist.
 ```bash
 python setup.py bdist_wheel sdist
 twine upload dist/*

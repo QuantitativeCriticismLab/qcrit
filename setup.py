@@ -6,7 +6,7 @@ import pipfile
 
 setuptools.setup(
 	name='qcrit',
-	version='0.0.13',
+	version='0.0.14',
 	author='Tim Gianitsos',
 	author_email='contact@qcrit.org',
 	description='Quantitative Criticism Lab',
