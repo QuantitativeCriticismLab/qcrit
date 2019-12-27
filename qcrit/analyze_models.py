@@ -5,6 +5,7 @@ from functools import partial
 from collections import OrderedDict
 import os
 import pickle
+import csv
 
 import numpy as np
 
@@ -18,21 +19,19 @@ def _get_features(feature_data_file):
 		filename_to_features = pickle.loads(pickle_file.read())
 	return filename_to_features
 
-#TODO handle backslash-commas in the csv they are meant to be read literally and do NOT
-#demarcate a csv cell
 def _get_file_classifications(classification_data_file):
 	#Obtain classifications for each file
 	with open(classification_data_file, mode='r') as classification_file:
+		csv_reader = csv.reader(classification_file)
 		filename_to_classification = {}
 		label_val_to_label_name = OrderedDict(
-			(np.float64(tok.split(':')[1]), tok.split(':')[0])
-			for tok in classification_file.readline().strip().split(',')
+			(tok.split(':')[1], tok.split(':')[0])
+			for tok in next(csv_reader)
 		)
-		classification_file.readline()
-		for line in classification_file:
-			line = line.strip().split(',')
-			filename_to_classification[line[0]] = np.float64(line[1])
-		assert all(v in label_val_to_label_name.keys() for v in filename_to_classification.values())
+		next(csv_reader)
+		for line in csv_reader:
+			filename_to_classification[line[0]] = line[1]
+		assert all(v in label_val_to_label_name for v in filename_to_classification.values())
 	return filename_to_classification, label_val_to_label_name
 
 def _get_classifier_data(filename_to_features, filename_to_classification, file_names, feature_names):
@@ -73,8 +72,8 @@ def main(feature_data_file, classification_data_file, model_funcs=None):
 
 	if filename_to_features.keys() - filename_to_classification.keys():
 		raise ValueError(
-			'There exist some files in the feature_data_file for which no label exists in '
-			'the classification_data_file: {\n\t'
+			'There exist some files in the feature_data_file for which no label exists in ' +
+			'the classification_data_file: {\n\t' +
 			'\n\t'.join(filename_to_features.keys() - filename_to_classification.keys()) + '\n}'
 		)
 

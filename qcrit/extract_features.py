@@ -21,7 +21,7 @@ def parse_tess(file_name):
 			#Ignore lines without tess tags, or parse the tag out and strip whitespace
 			if not line.startswith('<'):
 				continue
-			assert '>' in line
+			assert '>' in line, f'Malformed tess tag in {file_name}'
 			file_text.write(line[line.index('>') + 1:].strip())
 			file_text.write(' ')
 	return file_text.getvalue()

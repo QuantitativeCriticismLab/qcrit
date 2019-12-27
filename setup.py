@@ -22,6 +22,6 @@ setuptools.setup(
 	],
 	install_requires=[
 		pkg + (version if version != '*' else '')
-		for pkg, version in pipfile.load('./Pipfile').data['default'].items()
+		for pkg, version in pipfile.load('Pipfile').data['default'].items()
 	],
 )
