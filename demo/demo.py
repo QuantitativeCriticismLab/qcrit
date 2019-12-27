@@ -2,12 +2,13 @@
 #Not tested on windows
 
 import os
+from shlex import quote
 
 _CURRENT_DIR = os.path.dirname(__file__)
 #If the output file already exists, the feature extraction code will not override it
 #Delete the output file so that the demo can create one
 if os.path.isfile(os.path.join(_CURRENT_DIR, 'output.pickle')):
-	os.system('rm ' + os.path.join(_CURRENT_DIR, 'output.pickle'))
+	os.system('rm ' + quote(os.path.join(_CURRENT_DIR, 'output.pickle')))
 
 import context #pylint: disable=unused-import
 import qcrit.extract_features
@@ -23,7 +24,9 @@ setup_tokenizers(terminal_punctuation=('.', ';'))
 def num_conjunctions(text): #parameter must be the text of a file
 	return reduce(
 		lambda count, word: count + (
-			1 if word in {normalize('NFD', val) for val in ['καί', 'καὶ', 'ἀλλά', 'ἀλλὰ', 'ἤ', 'ἢ']} else 0
+			1 if word in {
+				normalize('NFD', val) for val in ['καί', 'καὶ', 'ἀλλά', 'ἀλλὰ', 'ἤ', 'ἢ']
+			} else 0
 		), text, 0
 	)
 
