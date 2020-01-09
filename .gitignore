@@ -192,3 +192,5 @@ GitHub.sublime-settings
 
 # Project-specific file patterns to ignore
 *.pickle
+qcrit/tokenizers
+

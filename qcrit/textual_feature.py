@@ -4,13 +4,17 @@ import re
 from inspect import signature
 from collections import OrderedDict
 from io import StringIO
+import os
+from os.path import join, dirname, isdir, isfile, abspath
+import sys
+import pickle
 
+import nltk
 import nltk.tokenize.punkt as punkt
 
 decorated_features = OrderedDict()
-lang = None
 word_tokenizer = None
-sentence_tokenizers = None
+sentence_tokenizer = None
 debug_output = StringIO()
 NON_WORD_CHARS = (
 	r"\?¿؟\!¡！‽…⋯᠁ฯ,،，､、。°※··᛫~\:;;\\\/⧸⁄（）\(\)\[\]\{\}\<\>"
@@ -24,7 +28,7 @@ tokenize_types = {
 		'tokens': None,
 	},
 	'sentences': {
-		'func': lambda text: sentence_tokenizers[lang].tokenize(text),
+		'func': lambda text: sentence_tokenizer.tokenize(text),
 		'prev_filepath': None,
 		'tokens': None,
 	},
@@ -34,7 +38,7 @@ tokenize_types = {
 		'tokens': None,
 	},
 	'sentence_words': {
-		'func': lambda text: [word_tokenizer.word_tokenize(s) for s in sentence_tokenizers[lang].tokenize(text)],
+		'func': lambda text: [word_tokenizer.word_tokenize(s) for s in sentence_tokenizer.tokenize(text)],
 		'prev_filepath': None,
 		'tokens': None,
 	},
@@ -50,16 +54,19 @@ def clear_cache():
 	debug_output.truncate(0)
 	debug_output.seek(0)
 
-def setup_tokenizers(*, language=None, terminal_punctuation):
+def setup_tokenizers(*, terminal_punctuation, language=None):
 	'''Initialize the word tokenizer and sentence tokenizer given the terminal punctuation'''
-	global lang
 	global word_tokenizer
-	global sentence_tokenizers
+	global sentence_tokenizer
 	global tokenize_types
-	lang = language #TODO validate in this function, not in textual_feature()
-	punkt.PunktLanguageVars.sent_end_chars = terminal_punctuation
-	punkt.PunktLanguageVars.re_boundary_realignment = re.compile(r'[›»》’”\'\"）\)\]\}\>]+?(?:\s+|(?=--)|$)', re.MULTILINE)
+	if word_tokenizer or sentence_tokenizer:
+		raise Exception('Tokenizers have already been initialized')
+
 	clear_cache()
+	punkt.PunktLanguageVars.sent_end_chars = terminal_punctuation
+	punkt.PunktLanguageVars.re_boundary_realignment = re.compile(
+		r'[›»》’”\'\"）\)\]\}\>]+?(?:\s+|(?=--)|$)', re.MULTILINE
+	)
 
 	'''
 	Accessing private variables of punkt.PunktLanguageVars because
@@ -99,28 +106,73 @@ def setup_tokenizers(*, language=None, terminal_punctuation):
 		'SentEndChars': sent_tok_vars._re_sent_end_chars,
 	}, re.UNICODE | re.VERBOSE)
 
-	sentence_tokenizers = {None: punkt.PunktSentenceTokenizer(lang_vars=punkt.PunktLanguageVars())}
-	for sen_tkzr in sentence_tokenizers.values():
-		sen_tkzr._lang_vars._re_period_context = sent_tok_vars._re_period_context
-		sen_tkzr._lang_vars._re_word_tokenizer = sent_tok_vars._re_word_tokenizer
+	if language:
+		#Attempt to download language-specific pretrained sentence tokenizer models from nltk
+		#Assume that the directory name that was downloaded from running
+		#`nltk.download('punkt')` will always be named 'tokenizers'
+		nltk_punkt_dir = join(dirname(__file__), 'tokenizers')
+		if not isdir(nltk_punkt_dir):
+			print('Attempting to download language-specific sentence tokenizer models from nltk...')
+			try:
+				nltk.download(info_or_id='punkt', download_dir=dirname(__file__), raise_on_error=True)
+			except Exception as e:
+				print(
+					'Failed to download sentence tokenization language data.'
+					' Consider leaving the language unspecified. This may cause sentence tokenization to'
+					' not properly recognize abbreviations, but otherwise it has reasonable performance.',
+					file=sys.stderr
+				)
+				raise e
+			print(
+				f'Successfully downloaded tokenizer models to '
+				f'{join(abspath(dirname(__file__)), "tokenizers")}'
+			)
+
+		#Attempt to load nltk data
+		models_dir = join(nltk_punkt_dir, 'punkt', 'PY3')
+		if not isdir(models_dir):
+			import errno
+			print(
+				'NLTK language data may not have been downloaded correctly.'
+				f' Consider leaving the language unspecified, or delete {nltk_punkt_dir}'
+				' if it exists, and try again.',
+				file=sys.stderr)
+			raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), models_dir)
+		try:
+			sentence_tokenizer = pickle.load(open(join(
+				models_dir, f'{language}{os.extsep}pickle'
+			), mode='rb'))
+		except Exception as e:
+			sep = '", "'
+			print(
+				f'Unable to load language data for "{language}"\nAvailable languages: '
+				f'''"{
+					sep.join(
+						['None'] + [m[:m.index(os.extsep)] for m in os.listdir(models_dir)
+						if m.endswith(f"pickle") and isfile(join(models_dir, m))]
+					)
+				}"''',
+				file=sys.stderr
+			)
+			raise e
+	else:
+		sentence_tokenizer = punkt.PunktSentenceTokenizer(lang_vars=punkt.PunktLanguageVars())
+
+	sentence_tokenizer._lang_vars._re_period_context = sent_tok_vars._re_period_context
+	sentence_tokenizer._lang_vars._re_word_tokenizer = sent_tok_vars._re_word_tokenizer
 
 def textual_feature(*, tokenize_type=None, debug=False):
 	'''Decorator for textual features'''
-	global lang
-	if not (word_tokenizer and sentence_tokenizers):
+	if not word_tokenizer or not sentence_tokenizer:
 		raise ValueError(
-			f'Tokenizers not initialized: Use '
-			f'"setup_tokenizers(terminal_punctuation=<collection of punctutation>)" before decorating a function'
+			f'Tokenizers not initialized: Use'
+			f' "setup_tokenizers(terminal_punctuation=<collection of punctutation>)"'
+			f' before decorating a function'
 		)
 	if tokenize_type not in tokenize_types:
 		raise ValueError(
 			'"' + str(tokenize_type) + '" is not a valid tokenize type: Choose from among ' +
 			str(list(tokenize_types.keys()))
-		)
-	if lang not in sentence_tokenizers:
-		raise ValueError(
-			f'"{str(lang)}" is not an available language. Choose from among '
-			f'{list(sentence_tokenizers.keys())}'
 		)
 	def decor(f):
 		#TODO make this more extensible. Use keyword args somehow instead of 'text' parameter?

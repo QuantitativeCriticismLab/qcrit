@@ -65,7 +65,12 @@ def _extract_features(corpus_dir, file_extension_to_parse_function, excluded_pat
 		file_text = file_extension_to_parse_function[file_extension](file_name)
 
 		for feature_name, feature_func in feature_tuples:
-			score = feature_func(text=file_text, filepath=file_name)
+			try:
+				score = feature_func(text=file_text, filepath=file_name)
+			except Exception as exp:
+				import sys #pylint:disable=import-outside-toplevel
+				print(f'Error while parsing {file_name}', file=sys.stderr)
+				raise exp
 			text_to_features[file_name][feature_name] = score
 			if output_file is None:
 				print(f'{file_name}, {str(feature_name)}, {c.green(str(score))}')

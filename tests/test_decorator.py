@@ -5,7 +5,7 @@ import unittest
 import context #pylint: disable=unused-import
 import qcrit.textual_feature
 
-qcrit.textual_feature.setup_tokenizers(terminal_punctuation=('.', '?'))
+qcrit.textual_feature.setup_tokenizers(terminal_punctuation=('.', '?'), language='english')
 
 @qcrit.textual_feature.textual_feature(tokenize_type='sentences', debug=True)
 def foo(text):

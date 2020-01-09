@@ -25,7 +25,7 @@ p._re_period_context = re.compile(
 		'NonWord': r"(?:[\d\.\?¿؟\!¡！‽…⋯᠁ฯ,،，､、。°※··᛫~\:;;\\\/⧸⁄（）\(\)\[\]\{\}\<\>\'\"‘’“”‹›«»《》\|‖\=\-\‐\‒\–\—\―_\+\*\^\$£€§%#@&†‡])",
 		'SentEndChars': p._re_sent_end_chars,
 	}, re.UNICODE | re.VERBOSE)
-sentence_tokenizer = PunktSentenceTokenizer(lang_vars=p)
+test_sentence_tokenizer = PunktSentenceTokenizer(lang_vars=p)
 
 class TestParsers(unittest.TestCase):
 
@@ -82,13 +82,13 @@ class TestParsers(unittest.TestCase):
 
 	def test_sentence_slant_quote1_5(self):
 		s = 'a b c. "a b c". a b c. "a b c." a b c. “a b c”. a b c. “a b c.” a b c.'
-		result = textual_feature.sentence_tokenizers[None].tokenize(s)
+		result = textual_feature.sentence_tokenizer.tokenize(s)
 		expected = ['a b c.', '"a b c".', 'a b c.', '"a b c."', 'a b c.', '“a b c”.', 'a b c.', '“a b c.”', 'a b c.']
 		self.assertEqual(expected, result)
 
 	def test_sentence_slant_quote2(self):
 		s = 'a b c. "a b c". a b c. "a b c." a b c. “a b c”. a b c. “a b c.” a b c.'
-		result = sentence_tokenizer.tokenize(s)
+		result = test_sentence_tokenizer.tokenize(s)
 		expected = ['a b c.', '"a b c".', 'a b c.', '"a b c."', 'a b c.', '“a b c”.', 'a b c.', '“a b c.”', 'a b c.']
 		self.assertEqual(expected, result)
 
@@ -120,5 +120,3 @@ http://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A2008.01.0012%3Acha
 
 if __name__ == '__main__':
 	unittest.main()
-	# print(textual_feature.sentence_tokenizers['ancient_greek']._lang_vars._re_word_tokenizer)
-	# print(sentence_tokenizer._lang_vars._re_word_tokenizer)
