@@ -195,12 +195,16 @@ Elapsed time: 0.0082 seconds
 ```
 
 ## Development
-To activate the virtual environment, ensure that you have `pipenv` installed and `python` version 3.6 installed. Run the following:
-```bash
-pipenv --python 3.6
-pipenv shell
-pipenv install --dev
-```
+1. Ensure that you have `pipenv` installed. Also, ensure that you have a version of `python` installed that matches the version in the `Pipfile`.
+1. Setup a virtual environment and install the necessary dependencies:
+	```bash
+	PIPENV_VENV_IN_PROJECT=true pipenv install --dev
+	```
+1. Activate the virtual environment:
+	```bash
+	pipenv shell
+	```
+	Now, `python` commands will use the dependencies and `python` version from the virtual environment. Use `exit` to leave the virtual environment, and use `pipenv shell` while in the project directory to activate it again.
 
 ### Demo
 ```bash
@@ -208,7 +212,7 @@ python demo/demo.py
 ```
 
 ## Submission
-The following commands will submit the package to the `Python Package Index`. Before running them, it may be necessary to increment the version number in `setup.py` and to delete any previously generated `dist/`, `build/`, and `egg-info` directories if they exist.
+The following commands will submit the package to the `Python Package Index`. Before running them, it may be necessary to increment the version number in `__init__.py` and to delete any previously generated `dist/`, `build/`, and `egg-info` directories if they exist.
 ```bash
 python setup.py bdist_wheel sdist
 twine upload dist/*
