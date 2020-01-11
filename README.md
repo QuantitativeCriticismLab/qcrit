@@ -1,5 +1,6 @@
-Utilities for The Quantitative Criticism Lab
+Facilitates feature extraction and analysis of texts
 https://www.qcrit.org
+The Quantitative Criticism Lab
 
 ## Installation
 With `pip`:

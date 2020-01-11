@@ -1,2 +1,2 @@
 '''Facilitates feature extraction and analysis of texts'''
-__version__ = '0.0.17'
+__version__ = '0.0.18'

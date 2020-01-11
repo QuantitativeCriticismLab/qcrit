@@ -9,7 +9,7 @@ from collections import Counter
 from string import punctuation
 from math import nan
 
-from qcrit.textual_feature import textual_feature
+from ..textual_feature import textual_feature
 
 _WORD_REGEX = re.compile(r'^\w+$')
 _DEGENERATE_PLACEHOLDER = '@'
