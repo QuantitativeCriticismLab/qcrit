@@ -18,7 +18,10 @@ setuptools.setup(
 	).group(1),
 	author='Tim Gianitsos',
 	author_email='contact@qcrit.org',
-	description='Quantitative Criticism Lab',
+	description=(
+		'Easily extract features from texts, and run machine learning algorithms '
+		'on them. Write your own features, use ours, or do both!'
+	),
 	long_description=open(join(dirname(__file__), 'README.md'), mode='r').read(),
 	long_description_content_type='text/markdown',
 	url='https://www.qcrit.org',

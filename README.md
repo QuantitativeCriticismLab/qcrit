@@ -1,6 +1,6 @@
-Facilitates feature extraction and analysis of texts
+Easily extract features from texts, and run machine learning algorithms on them. Write your own features, use ours, or do both!
+
 https://www.qcrit.org
-The Quantitative Criticism Lab
 
 ## Installation
 With `pip`:
@@ -15,13 +15,24 @@ pipenv install qcrit
 
 The qcrit package contains utilities to facilitate processing and analyzing literature.
 
-### Feature extraction
+To get started, just replace `'your-directory-name'` with the name of a directory of `.txt` files. Everything else is taken care of!
+```python
+from qcrit.extract_features import main
+from qcrit.textual_feature import setup_tokenizers
+import qcrit.features.universal_features
+setup_tokenizers(terminal_punctuation=('.', '!', '?'))
+main(
+	corpus_dir='your-directory-name', file_extension_to_parse_function={'txt': lambda filename: open(filename).read()}
+)
+```
+
+### Writing Your Own Features
 
 A feature is a number that results from processing literature. An example of a feature might be the number of definite articles, the mean sentence length, or the fraction of interrogative sentences. The word "feature" can also refer to a python function that computes such a value.
 
-To compute features, you must 1) traverse each text in a corpus, 2) parse the text into tokens, 3) write logic to calculate features, and 4) output the results to the console or to a file. Also, this will run slowly unless you 5) cache tokenized text for features that use the same tokens.
+Normally to compute features, you must 1) obtain a corpus of texts, 2) traverse each text in the corpus, 3) parse the text into tokens, 4) write logic to calculate features, and 5) output the results to the console or to a file. Also, this will run slowly unless you 6) cache tokenized text for features that use the same tokens.
 
-With the `textual_feature` decorator, steps (1), (2), (4), and (5) are abstracted away - you just need to implement (3) the logic to calculate each feature.
+With the `textual_feature` decorator, steps (2), (3), (4), (5), and (6) are abstracted away - you just need (1) to supply the corpus.
 
 Once you have written a feature as a `python` function, label it with the decorator `textual_feature`. Your feature must have exactly one parameter which is assumed to be the parsed text of a file.
 ```python
@@ -31,40 +42,42 @@ def count_definite_article(text):
 	return text.count('the')
 ```
 
-The `textual_feature` module takes an argument that represents the type of tokenization.
+The `textual_feature` decorator takes an argument that represents the type of tokenization.
 
-There are four supported tokenization_types: 'sentences', 'words', 'sentence_words' and None. This tells the function in 
-what format it will receive the 'text' parameter.
-- If None, the function will receive the text parameter as a string. 
-- If 'sentences', the function will receive the text parameter as a list of sentences, each as a string
-- If 'words', the function will receive the text parameter as a list of words
-- If 'sentence_words', the function will recieve the text parameter as a list of sentences, each as a list of words
+There are four supported tokenization_types: `'sentences'`, `'words'`, `'sentence_words'` and `None`. This tells the function in 
+what format it will receive the `'text'` parameter.
+- If `None`, the function will receive the text parameter as a string. 
+- If `'sentences'`, the function will receive the text parameter as a list of sentences, each as a string
+- If `'words'`, the function will receive the text parameter as a list of words
+- If `'sentence_words'`, the function will recieve the text parameter as a list of sentences, each as a list of words
 
 ```python
 from functools import reduce
 @textual_feature(tokenize_type='sentences')
 def mean_sentence_len(text):
-	sen_len = reduce(lambda cur_len, cur_sen: cur_len + len(cur_sen))
+	sen_len = reduce(lambda cur_len, cur_sen: cur_len + len(cur_sen), text, 0)
 	num_sentences = len(text)
 	return sen_len / num_sentences
 ```
 
+### Extracting Features
+
 Use `qcrit.extract_features.main` to run all the functions labeled with the decorators and output results into a file.
 
-corpus_dir - the directory to search for files containing texts, this will traverse all sub-directories as well
+`corpus_dir` - the directory to search for files containing texts, this will traverse all sub-directories as well
 
-file_extension_to_parse_function - map from file extension (e.g. 'txt', 'tess') of texts that you would like to parse to a function directing how to parse it
+`file_extension_to_parse_function` - map from file extension (e.g. 'txt', 'tess') of texts that you would like to parse to a function directing how to parse it
 
-output_file - the file to output the results into, created to be analyzed during machine learning phase
+`output_file` - the file to output the results into, created to be analyzed during machine learning phase
 
-In order for sentence tokenization to work correctly, setup_tokenizers() must be set to the 
-terminal punctuation marks of the language being analyzed. Make sure this is done before features are declared.
+In order for sentence tokenization to work correctly, `setup_tokenizers()` must be called with the 
+terminal punctuation marks of the language being analyzed. You can also optionally supply the name of the language as well. If data exists about how to parse the language, this may improve sentence tokenization.
 
 ```python
 from qcrit.extract_features import main, parse_tess
 from qcrit.textual_feature import setup_tokenizers
 from somewhere_else import count_definite_article, mean_sentence_len
-setup_tokenizers(terminal_punctuation=('.', '?'))
+setup_tokenizers(terminal_punctuation=('.', '!', '?'), language='greek')
 main(
 	corpus_dir='demo', file_extension_to_parse_function={'tess': parse_tess}, output_file='output.pickle'
 )
