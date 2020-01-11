@@ -62,8 +62,8 @@ terminal punctuation marks of the language being analyzed. Make sure this is don
 ```python
 from qcrit.extract_features import main, parse_tess
 from qcrit.textual_feature import setup_tokenizers
-setup_tokenizers(terminal_punctuation=('.', '?'))
 from somewhere_else import count_definite_article, mean_sentence_len
+setup_tokenizers(terminal_punctuation=('.', '?'))
 main(
 	corpus_dir='demo', file_extension_to_parse_function={'tess': parse_tess}, output_file='output.pickle'
 )

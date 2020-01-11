@@ -5,7 +5,7 @@ from inspect import signature
 from collections import OrderedDict
 from io import StringIO
 import os
-from os.path import join, dirname, isdir, isfile, abspath
+from os.path import join, dirname, isdir, isfile, abspath, lexists
 import sys
 import pickle
 
@@ -111,7 +111,7 @@ def setup_tokenizers(*, terminal_punctuation, language=None):
 		#Assume that the directory name that was downloaded from running
 		#`nltk.download('punkt')` will always be named 'tokenizers'
 		nltk_punkt_dir = join(dirname(__file__), 'tokenizers')
-		if not isdir(nltk_punkt_dir):
+		if not lexists(nltk_punkt_dir):
 			print('Attempting to download language-specific sentence tokenizer models from nltk...')
 			try:
 				nltk.download(info_or_id='punkt', download_dir=dirname(__file__), raise_on_error=True)
@@ -134,7 +134,7 @@ def setup_tokenizers(*, terminal_punctuation, language=None):
 			import errno
 			print(
 				'NLTK language data may not have been downloaded correctly.'
-				f' Consider leaving the language unspecified, or delete {nltk_punkt_dir}'
+				f' Consider leaving the language unspecified, or delete {abspath(nltk_punkt_dir)}'
 				' if it exists, and try again.',
 				file=sys.stderr)
 			raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), models_dir)
@@ -149,7 +149,7 @@ def setup_tokenizers(*, terminal_punctuation, language=None):
 				f'''"{
 					sep.join(
 						['None'] + [m[:m.index(os.extsep)] for m in os.listdir(models_dir)
-						if m.endswith(f"pickle") and isfile(join(models_dir, m))]
+						if m.endswith(f"{os.extsep}pickle") and isfile(join(models_dir, m))]
 					)
 				}"''',
 				file=sys.stderr
@@ -163,12 +163,6 @@ def setup_tokenizers(*, terminal_punctuation, language=None):
 
 def textual_feature(*, tokenize_type=None, debug=False):
 	'''Decorator for textual features'''
-	if not word_tokenizer or not sentence_tokenizer:
-		raise ValueError(
-			f'Tokenizers not initialized: Use'
-			f' "setup_tokenizers(terminal_punctuation=<collection of punctutation>)"'
-			f' before decorating a function'
-		)
 	if tokenize_type not in tokenize_types:
 		raise ValueError(
 			'"' + str(tokenize_type) + '" is not a valid tokenize type: Choose from among ' +
@@ -186,6 +180,12 @@ def textual_feature(*, tokenize_type=None, debug=False):
 				f'\nFound parameters: {set(sig_params) if sig_params else "{}"}'
 			)
 		def wrapper(*, text, filepath=None):
+			if not word_tokenizer or not sentence_tokenizer:
+				raise ValueError(
+					f'Tokenizers not initialized: Use'
+					f' "setup_tokenizers(terminal_punctuation=<tuple of punctutation>)"'
+					f' before running functions'
+				)
 			if not filepath:
 				return f(tokenize_types[tokenize_type]['func'](text))
 
