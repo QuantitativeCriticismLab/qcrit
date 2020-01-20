@@ -70,12 +70,8 @@ def main(feature_data_file, classification_data_file, model_funcs=None):
 
 	filename_to_classification, label_val_to_label_name = _get_file_classifications(classification_data_file)
 
-	if filename_to_features.keys() - filename_to_classification.keys():
-		raise ValueError(
-			'There exist some files in the feature_data_file for which no label exists in ' +
-			'the classification_data_file: {\n\t' +
-			'\n\t'.join(filename_to_features.keys() - filename_to_classification.keys()) + '\n}'
-		)
+	#Filter out unused texts (i.e. features were extracted for a text, but no labels exist for it)
+	filename_to_features = {k: v for k, v in filename_to_features.items() if k in filename_to_classification}
 
 	#Filter out unused labels (i.e. a label exists for a file with that name but no features were extracted for it)
 	used_label_numbers = {filename_to_classification[filename] for filename in filename_to_features.keys()}
