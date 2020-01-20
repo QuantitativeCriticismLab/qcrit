@@ -11,8 +11,8 @@ tqdm = "*"
 [dev-packages]
 pylint = "*"
 twine = "*"
-scikit-learn = "*"
 pipfile = "*"
+scikit-learn = "*"
 
 [requires]
 python_version = "3.6"

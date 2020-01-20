@@ -8,14 +8,15 @@ import statistics
 from collections import Counter
 import warnings
 
-from ..model_analyzer import model_analyzer
-
 from sklearn.exceptions import UndefinedMetricWarning
 import numpy as np
 from tqdm import tqdm
 import sklearn
 from sklearn import svm, neural_network, naive_bayes, ensemble, neighbors
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, GridSearchCV
+from sklearn.inspection import permutation_importance
+
+from ..model_analyzer import model_analyzer
 
 #Ignores warning for undefined F1-score when a category is never predicted.
 warnings.filterwarnings(action='ignore', category=UndefinedMetricWarning)
@@ -214,7 +215,7 @@ def random_forest_misclassifications(data, target, file_names, feature_names, la
 			(t[1], rf_trials * kfold_trials, t[1] / rf_trials / kfold_trials * 100, t[0]))
 
 @model_analyzer()
-def random_forest_feature_rankings(data, target, file_names, feature_names, labels_key):
+def random_forest_gini_feature_rankings(data, target, file_names, feature_names, labels_key):
 	rf_trials = 10
 	kfold_trials = 10
 	splits = 5
@@ -226,7 +227,7 @@ def random_forest_feature_rankings(data, target, file_names, feature_names, labe
 		'min_weight_fraction_leaf': 0.0, 'n_estimators': 10, 'n_jobs': 1, 'oob_score': False, 
 		'verbose': 0, 'warm_start': False
 	}
-	print(RED + 'Random Forest feature rankings' + RESET)
+	print(RED + 'Random Forest Gini feature rankings' + RESET)
 	print('Obtain rankings by testing different RF seeds and different data splits')
 	print('RF seeds tested: 0-' + str(rf_trials - 1) + ' (inclusive)')
 	print('Cross validation splitter seeds tested: 0-' + str(kfold_trials - 1) + ' (inclusive)')
@@ -261,6 +262,67 @@ def random_forest_feature_rankings(data, target, file_names, feature_names, labe
 		print('\t' + '%.6f +/- standard deviation of %.4f' % (t[1].mean(), t[1].std()) + ': ' + t[0])
 
 @model_analyzer()
+def random_forest_permutation_importance_feature_rankings(data, target, file_names, feature_names, labels_key):
+	rf_trials = 5
+	kfold_trials = 5
+	splits = 5
+	permute_repeats = 5
+	importances = np.empty(shape=(len(feature_names), 0))
+	forest_params = {
+		'bootstrap': True, 'class_weight': None, 'criterion': 'gini', 'max_depth': None, 
+		'max_features': 'sqrt', 'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 
+		'min_impurity_split': None, 'min_samples_leaf': 1, 'min_samples_split': 2, 
+		'min_weight_fraction_leaf': 0.0, 'n_estimators': 10, 'n_jobs': 1, 'oob_score': False, 
+		'verbose': 0, 'warm_start': False
+	}
+	print(f'{RED}Random Forest permutation importance feature rankings{RESET}')
+	print('Obtain rankings by testing different RF seeds and different data splits')
+	print('RF seeds tested: 0-' + str(rf_trials - 1) + ' (inclusive)')
+	print('Cross validation splitter seeds tested: 0-' + str(kfold_trials - 1) + ' (inclusive)')
+	print('Number of splits: ' + str(splits))
+	print(f'Number of permutations tested: {permute_repeats}')
+	print('Labels tested: [' + ', '.join(v + ' (value of ' + str(k) + ')' for k, v in labels_key.items()) + ']')#TODO should filtering be done here?
+	print('Features tested: ' + str(feature_names))
+	print('RF parameters: ' + str(forest_params))
+	print()
+
+	trial = 0
+	with tqdm(total=rf_trials * kfold_trials * splits, dynamic_ncols=True) as pbar:
+		for rf_seed in range(rf_trials):
+			clf = ensemble.RandomForestClassifier(random_state=rf_seed, **forest_params)
+			for kfold_seed in range(kfold_trials):
+				splitter = StratifiedKFold(n_splits=splits, shuffle=True, random_state=kfold_seed)
+				current_fold = 0
+				for train_indices, validate_indices in splitter.split(data, target):
+					features_train, features_validate = data[train_indices], data[validate_indices]
+					labels_train, labels_validate = target[train_indices], target[validate_indices]
+
+					clf.fit(features_train, labels_train)
+
+					importances = np.append(importances, permutation_importance(
+						clf, features_validate, labels_validate, n_repeats=permute_repeats, random_state=0
+					)['importances'], axis=1)
+
+					trial += 1
+					pbar.set_description('rf seed: %d, splitter seed: %d, fold: %d' % (rf_seed, kfold_seed, current_fold))
+					pbar.update(1)
+					current_fold += 1
+
+	feature_stats = sorted([
+		(importance, std_dev, name)
+		for importance, std_dev, name in zip(importances.mean(axis=1), importances.var(axis=1), feature_names)
+	], key=lambda t: -t[0])
+	print(
+		f'{YELLOW}Permutation importance averages from '
+		f'{rf_trials * kfold_trials * splits * permute_repeats} ('
+		f'{rf_trials} * {kfold_trials} * {splits} * {permute_repeats}) trials{RESET}'
+	)
+	print('\n'.join(
+		f'\t{importance:.5f} +/- standard deviation of {std_dev:.5f}: {name}'
+		for importance, std_dev, name in feature_stats)
+	)
+
+@model_analyzer()
 def random_forest_hyper_parameters(data, target, file_names, feature_names, labels_key):
 	print(f'{RED}Random Forest hyper parameter search:{RESET}')
 	default_forest_params = {
@@ -268,7 +330,7 @@ def random_forest_hyper_parameters(data, target, file_names, feature_names, labe
 		'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 
 		'min_impurity_split': None, 'min_samples_split': 2, 
 		'min_weight_fraction_leaf': 0.0, 'n_jobs': 1, 'oob_score': False, 
-		'verbose': 0, 'warm_start': False
+		'verbose': 0, 'warm_start': False, 'random_state': 0,
 	}
 
 	candidate_params = {
@@ -289,41 +351,41 @@ def random_forest_hyper_parameters(data, target, file_names, feature_names, labe
 		folds, statistics.mean(cross_val_score(clf, data, target, scoring='accuracy', cv=folds))
 	))
 
-@model_analyzer()
-def sample_classifiers(data, target, file_names, feature_names, labels_key):
-	#Includes a sample of several the machine learning classifiers
-	classifiers = [
-		ensemble.RandomForestClassifier(random_state=0, n_estimators=10, max_features='sqrt'), 
-		svm.SVC(gamma=0.00001, kernel='rbf', random_state=0), 
-		naive_bayes.GaussianNB(priors=None), 
-		neighbors.KNeighborsClassifier(n_neighbors=5), 
-		neural_network.MLPClassifier(activation='relu', solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(12,), random_state=0), 
-	]
-	features_train, features_test, labels_train, labels_test = train_test_split(data, target, test_size=0.4, random_state=0)
+# @model_analyzer()
+# def sample_classifiers(data, target, file_names, feature_names, labels_key):
+# 	#Includes a sample of several the machine learning classifiers
+# 	classifiers = [
+# 		ensemble.RandomForestClassifier(random_state=0, n_estimators=10, max_features='sqrt'), 
+# 		svm.SVC(gamma=0.00001, kernel='rbf', random_state=0), 
+# 		naive_bayes.GaussianNB(priors=None), 
+# 		neighbors.KNeighborsClassifier(n_neighbors=5), 
+# 		neural_network.MLPClassifier(activation='relu', solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(12,), random_state=0), 
+# 	]
+# 	features_train, features_test, labels_train, labels_test = train_test_split(data, target, test_size=0.4, random_state=0)
 
-	print(RED + 'Miscellaneous machine learning models:' + RESET)
+# 	print(RED + 'Miscellaneous machine learning models:' + RESET)
 
-	tabs = 1
-	for clf in classifiers:
-		print('\n' + PURPLE + '\t' * tabs + clf.__class__.__name__ + RESET)
+# 	tabs = 1
+# 	for clf in classifiers:
+# 		print('\n' + PURPLE + '\t' * tabs + clf.__class__.__name__ + RESET)
 
-		#Parameters used in creating this classifier
-		print('\t' * (tabs + 1) + 'Parameters: ' + str(clf.get_params()))
-		print()
+# 		#Parameters used in creating this classifier
+# 		print('\t' * (tabs + 1) + 'Parameters: ' + str(clf.get_params()))
+# 		print()
 
-		#Train & predict classifier
-		clf.fit(features_train, labels_train)
-		results = clf.predict(features_test)
-		expected = labels_test
+# 		#Train & predict classifier
+# 		clf.fit(features_train, labels_train)
+# 		results = clf.predict(features_test)
+# 		expected = labels_test
 
-		print('\t' * (tabs + 1) + YELLOW + f'Train 60% ({labels_train.shape[0]} files) / Test 40% ({labels_test.shape[0]} files)' + RESET)
-		_display_stats(expected, results, file_names, labels_key, tabs + 1)
+# 		print('\t' * (tabs + 1) + YELLOW + f'Train 60% ({labels_train.shape[0]} files) / Test 40% ({labels_test.shape[0]} files)' + RESET)
+# 		_display_stats(expected, results, file_names, labels_key, tabs + 1)
 
-		#Cross validation
-		#https://scikit-learn.org/stable/modules/cross_validation.html#obtaining-predictions-by-cross-validation
-		print('\t' * (tabs + 1) + YELLOW + 'Cross Validation:' + RESET)
-		num_splits = 5
-		scores = cross_val_score(clf, features_train, labels_train, cv=StratifiedKFold(n_splits=num_splits, shuffle=True, random_state=0))
-		print('\t' * (tabs + 1) + YELLOW + f'{num_splits}-fold Cross Validation (train {(1 - 1 / num_splits) * 100:.0f}% / test {1 / num_splits * 100:.0f}% per fold):' + RESET)
-		print('\t' * (tabs + 1) + 'Scores: ' + str(scores))
-		print('\t' * (tabs + 1) + 'Avg Accuracy: %0.2f (+/- %0.2f)' % (scores.mean(), scores.std() * 2))
+# 		#Cross validation
+# 		#https://scikit-learn.org/stable/modules/cross_validation.html#obtaining-predictions-by-cross-validation
+# 		print('\t' * (tabs + 1) + YELLOW + 'Cross Validation:' + RESET)
+# 		num_splits = 5
+# 		scores = cross_val_score(clf, features_train, labels_train, cv=StratifiedKFold(n_splits=num_splits, shuffle=True, random_state=0))
+# 		print('\t' * (tabs + 1) + YELLOW + f'{num_splits}-fold Cross Validation (train {(1 - 1 / num_splits) * 100:.0f}% / test {1 / num_splits * 100:.0f}% per fold):' + RESET)
+# 		print('\t' * (tabs + 1) + 'Scores: ' + str(scores))
+# 		print('\t' * (tabs + 1) + 'Avg Accuracy: %0.2f (+/- %0.2f)' % (scores.mean(), scores.std() * 2))
