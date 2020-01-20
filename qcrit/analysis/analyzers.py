@@ -259,7 +259,7 @@ def random_forest_gini_feature_rankings(data, target, file_names, feature_names,
 	print(YELLOW + 'Gini importance averages from ' + str(rf_trials * kfold_trials * splits) + 
 		' (' + str(rf_trials) + ' * ' + str(kfold_trials) + ' * ' + str(splits) + ') trials' + RESET)
 	for t in sorted([(feat, rank) for feat, rank in feature_rankings.items()], key=lambda s: -1 * s[1].mean()):
-		print('\t' + '%.6f +/- standard deviation of %.4f' % (t[1].mean(), t[1].std()) + ': ' + t[0])
+		print('\t' + '%.6f +/- standard deviation of %.6f' % (t[1].mean(), t[1].std()) + ': ' + t[0])
 
 @model_analyzer()
 def random_forest_permutation_importance_feature_rankings(data, target, file_names, feature_names, labels_key):
@@ -318,38 +318,38 @@ def random_forest_permutation_importance_feature_rankings(data, target, file_nam
 		f'{rf_trials} * {kfold_trials} * {splits} * {permute_repeats}) trials{RESET}'
 	)
 	print('\n'.join(
-		f'\t{importance:.5f} +/- standard deviation of {std_dev:.5f}: {name}'
+		f'\t{importance:.6f} +/- standard deviation of {std_dev:.6f}: {name}'
 		for importance, std_dev, name in feature_stats)
 	)
 
-@model_analyzer()
-def random_forest_hyper_parameters(data, target, file_names, feature_names, labels_key):
-	print(f'{RED}Random Forest hyper parameter search:{RESET}')
-	default_forest_params = {
-		'bootstrap': True, 'class_weight': None, 'max_depth': None, 
-		'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 
-		'min_impurity_split': None, 'min_samples_split': 2, 
-		'min_weight_fraction_leaf': 0.0, 'n_jobs': 1, 'oob_score': False, 
-		'verbose': 0, 'warm_start': False, 'random_state': 0,
-	}
+# @model_analyzer()
+# def random_forest_hyper_parameters(data, target, file_names, feature_names, labels_key):
+# 	print(f'{RED}Random Forest hyper parameter search:{RESET}')
+# 	default_forest_params = {
+# 		'bootstrap': True, 'class_weight': None, 'max_depth': None, 
+# 		'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 
+# 		'min_impurity_split': None, 'min_samples_split': 2, 
+# 		'min_weight_fraction_leaf': 0.0, 'n_jobs': 1, 'oob_score': False, 
+# 		'verbose': 0, 'warm_start': False, 'random_state': 0,
+# 	}
 
-	candidate_params = {
-		# 'max_features': range(int(data.shape[1] ** 0.5), data.shape[1]),
-		'n_estimators': (10, 50, 100),
-		# 'min_samples_leaf': range(1, int(len(target) ** 0.5)),
-		# 'criterion': ('gini', 'entropy'),
-	}
-	print(f'Testing candidate parameters {candidate_params}')
-	folds = 5
-	best_params = GridSearchCV(
-		ensemble.RandomForestClassifier(**default_forest_params), candidate_params,
-		verbose=2, cv=folds,
-	).fit(data, target).best_params_
-	print(f'Best parameters: {best_params}')
-	clf = ensemble.RandomForestClassifier(**default_forest_params, **best_params)
-	print('Accuracy from {}-fold cross-validation = {}'.format(
-		folds, statistics.mean(cross_val_score(clf, data, target, scoring='accuracy', cv=folds))
-	))
+# 	candidate_params = {
+# 		# 'max_features': range(int(data.shape[1] ** 0.5), data.shape[1]),
+# 		'n_estimators': (10, 50, 100),
+# 		# 'min_samples_leaf': range(1, int(len(target) ** 0.5)),
+# 		# 'criterion': ('gini', 'entropy'),
+# 	}
+# 	print(f'Testing candidate parameters {candidate_params}')
+# 	folds = 5
+# 	best_params = GridSearchCV(
+# 		ensemble.RandomForestClassifier(**default_forest_params), candidate_params,
+# 		verbose=2, cv=folds,
+# 	).fit(data, target).best_params_
+# 	print(f'Best parameters: {best_params}')
+# 	clf = ensemble.RandomForestClassifier(**default_forest_params, **best_params)
+# 	print('Accuracy from {}-fold cross-validation = {}'.format(
+# 		folds, statistics.mean(cross_val_score(clf, data, target, scoring='accuracy', cv=folds))
+# 	))
 
 # @model_analyzer()
 # def sample_classifiers(data, target, file_names, feature_names, labels_key):

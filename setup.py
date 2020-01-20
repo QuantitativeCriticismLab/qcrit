@@ -34,6 +34,8 @@ setuptools.setup(
 		'Operating System :: OS Independent',
 	],
 	install_requires=[
+		#Use the [packages] section from the Pipfile to determine required dependencies
+		#The [dev-packages] section is not included
 		pkg + (version if version != '*' else '')
 		for pkg, version in pipfile.load(join(dirname(__file__), 'Pipfile')).data['default'].items()
 	],
