@@ -67,11 +67,26 @@ def main(feature_data_file, classification_data_file, model_funcs=None):
 		)
 
 	filename_to_features = _get_features(feature_data_file)
+	if not filename_to_features:
+		raise Exception(f'The file "{feature_data_file}" has no data!')
 
 	filename_to_classification, label_val_to_label_name = _get_file_classifications(classification_data_file)
 
 	#Filter out unused texts (i.e. features were extracted for a text, but no labels exist for it)
-	filename_to_features = {k: v for k, v in filename_to_features.items() if k in filename_to_classification}
+	filtered_features = {k: v for k, v in filename_to_features.items() if k in filename_to_classification}
+	diff = filename_to_features.keys() - filtered_features.keys()
+	if diff:
+		import sys
+		print(
+			f'The following texts have data in "{feature_data_file}" '
+			f'but no corresponding label in "{classification_data_file}". '
+			'They will be ommited from analysis: {\n\t'
+			+ '\n\t'.join(diff) + '\n}',
+			file=sys.stderr
+		)
+	if not filtered_features:
+		raise Exception('None of the texts have labels!')
+	filename_to_features = filtered_features
 
 	#Filter out unused labels (i.e. a label exists for a file with that name but no features were extracted for it)
 	used_label_numbers = {filename_to_classification[filename] for filename in filename_to_features.keys()}
