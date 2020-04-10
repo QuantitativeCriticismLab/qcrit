@@ -2,7 +2,6 @@
 '''
 Language-independent features
 '''
-
 import re
 from statistics import mean, StatisticsError
 from collections import Counter
