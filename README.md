@@ -15,7 +15,7 @@ pipenv install qcrit
 
 The qcrit package contains utilities to facilitate processing and analyzing literature.
 
-To get started, just replace `'your-directory-name'` with the name of a directory of `.txt` files. Everything else is taken care of!
+To try extracting some features, just replace `'your-directory-name'` with the name of a directory of `.txt` files. Everything else is taken care of!
 ```python
 from qcrit.extract_features import main
 from qcrit.textual_feature import setup_tokenizers
@@ -32,7 +32,7 @@ A feature is a number that results from processing literature. An example of a f
 
 Normally to compute features, you must 1) obtain a corpus of texts, 2) traverse each text in the corpus, 3) parse the text into tokens, 4) write logic to calculate features, and 5) output the results to the console or to a file. Also, this will run slowly unless you 6) cache tokenized text for features that use the same tokens.
 
-With the `textual_feature` decorator, steps (2), (3), (4), (5), and (6) are abstracted away - you just need (1) to supply the corpus.
+With the `textual_feature` decorator, steps (2), (3), (5), and (6) are abstracted away - you just need (1) to supply the corpus.
 
 Once you have written a feature as a `python` function, label it with the decorator `textual_feature`. Your feature must have exactly one parameter which is assumed to be the parsed text of a file.
 ```python
@@ -62,7 +62,7 @@ def mean_sentence_len(text):
 
 ### Extracting Features
 
-Use `qcrit.extract_features.main` to run all the functions labeled with the decorators and output results into a file.
+Use `qcrit.extract_features.main` to run all the functions labeled with the `@textual_feature` decorator and output results into a file.
 
 `corpus_dir` - the directory to search for files containing texts, this will traverse all sub-directories as well
 
