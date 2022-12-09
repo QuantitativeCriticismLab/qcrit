@@ -32,7 +32,7 @@ A feature is a number that results from processing literature. An example of a f
 
 Normally to compute features, you must 1) obtain a corpus of texts, 2) traverse each text in the corpus, 3) parse the text into tokens, 4) write logic to calculate features, and 5) output the results to the console or to a file. Also, this will run slowly unless you 6) cache tokenized text for features that use the same tokens.
 
-With the `textual_feature` decorator, steps (2), (3), (5), and (6) are abstracted away - you just need (1) to supply the corpus.
+With the `textual_feature` decorator, steps (2), (3), (5), and (6) are abstracted away - you just need (1) to supply the corpus and (4) to write logic to calculate features.
 
 Once you have written a feature as a `python` function, label it with the decorator `textual_feature`. Your feature must have exactly one parameter which is assumed to be the parsed text of a file.
 ```python
